@@ -1,0 +1,49 @@
+# Disable directory listing
+Options -Indexes
+
+# Follow symlinks
+Options +FollowSymLinks
+
+# PHP error display (production: off)
+php_flag display_errors off
+php_flag log_errors on
+
+# HTTPS redirect (PRODUCTION: uncomment before deploy)
+# RewriteEngine On
+# RewriteCond %{HTTPS} off
+# RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# Custom error pages
+ErrorDocument 404 /404.php
+ErrorDocument 500 /500.php
+
+# Block access to sensitive files
+<FilesMatch "\.(sql|log|md|json|lock|yml|env|gitignore)$">
+    Require all denied
+</FilesMatch>
+
+# Block access to directories
+<FilesMatch "^(includes|config|uploads|vendor|cron|database)">
+    Require all denied
+</FilesMatch>
+
+# Security headers
+<IfModule mod_headers.c>
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-XSS-Protection "1; mode=block"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net; img-src 'self' data: https:; connect-src 'self';"
+</IfModule>
+
+# Protect uploads directory — no PHP execution
+<Directory "uploads">
+    php_flag engine off
+    Options -ExecCGI
+    AddHandler cgi-script .php .php3 .php4 .php5 .phtml .pl .py .jsp .asp .htm .shtml .sh .cgi
+    <FilesMatch "\.(php|php3|php4|php5|phtml|pl|py|jsp|asp|htm|shtml|sh|cgi)$">
+        Require all denied
+    </FilesMatch>
+</Directory>
