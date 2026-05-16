@@ -70,6 +70,8 @@ function generateOTP(): string
 
 Full implementations from `snippets/auth-pattern.md` — use verbatim.
 
+Note: `requireAdmin()` is already present in `includes/config.php` from Step 1 — no action required.
+
 ---
 
 ## `env.php` Addition
@@ -95,7 +97,7 @@ POST handler (runs before HTML output):
 4. Fetch user: `SELECT * FROM users WHERE email = ? AND status = 'active' LIMIT 1`
 5. Check per-account rate limit: `checkRateLimit($pdo, $email, 'admin_login', 10, 30)` — if locked, set `$error`
 6. `password_verify($password, $user['password'])`:
-   - **Fail:** `incrementRateLimit` on both `admin_login` and `ip_login`; `$error = 'Invalid email or password.'`
+   - **Fail:** `incrementRateLimit` on `ip_login` always; `incrementRateLimit` on `admin_login` only if `$user` was found (no email to key on when user doesn't exist). `$error = 'Invalid email or password.'`
    - **Success:**
      - `resetRateLimit` on both
      - `UPDATE otp_verifications SET used = 1 WHERE user_id = ?` (invalidate existing OTPs)
@@ -113,9 +115,11 @@ Guard: `if (empty($_SESSION['otp_user_id'])) redirect('/login.php');`
 POST handler:
 
 1. `verifyCsrf()`
-2. Query: `SELECT * FROM otp_verifications WHERE user_id = ? AND otp_code = ? AND used = 0 AND expires_at > NOW() ORDER BY created_at DESC LIMIT 1`
-3. **Fail:** `$error = 'Invalid or expired OTP. Please try again.'`
-4. **Success:**
+2. Check OTP rate limit: `checkRateLimit($pdo, $userId, 'otp_verify', 5, 15)` — if locked: clear `$_SESSION['otp_user_id']`, redirect to `/login.php` with error flash ("Too many failed OTP attempts. Please log in again.")
+3. Query: `SELECT * FROM otp_verifications WHERE user_id = ? AND otp_code = ? AND used = 0 AND expires_at > NOW() ORDER BY created_at DESC LIMIT 1`
+4. **Fail:** `incrementRateLimit($pdo, $userId, 'otp_verify', 5, 15)`; `$error = 'Invalid or expired OTP. Please try again.'`
+5. **Success:**
+   - `resetRateLimit($pdo, $userId, 'otp_verify')`
    - `UPDATE otp_verifications SET used = 1 WHERE id = ?`
    - Fetch full user record
    - `session_regenerate_id(true)`
@@ -125,7 +129,7 @@ POST handler:
 
 **Dev notice (only when `APP_ENV === 'local'`):** yellow Bootstrap alert on the page:
 ```
-⚠ DEV MODE — Check PHP error log for your OTP, or use the code logged above.
+⚠ DEV MODE — OTP was written to the PHP error log (not shown here).
 ```
 The OTP value itself is not rendered in HTML (it's in the error log only) — this avoids it appearing in browser history or server access logs.
 
@@ -136,6 +140,8 @@ The OTP value itself is not rendered in HTML (it's in the error log only) — th
 ```php
 <?php
 require_once '../includes/config.php';
+// No requireAdmin() guard — destroying a non-existent session is harmless.
+// config.php calls session_start() so the session is active before destroy.
 session_destroy();
 redirect('/login.php');
 ```
@@ -153,11 +159,11 @@ POST handler:
 1. `verifyCsrf()`
 2. `$email = trim($_POST['email'] ?? '')`; validate required + `filter_var(FILTER_VALIDATE_EMAIL)`
 3. Fetch user by email (no error if not found — same response either way)
-4. If user exists:
-   - `$token = bin2hex(random_bytes(32))` (raw token — sent in URL)
+4. If user exists (user record fetched in step 3 — `$user['id']` is available):
+   - `$token = bin2hex(random_bytes(32))` (raw token — sent in URL, never stored)
    - `$hash = hash('sha256', $token)` (stored in DB — never the raw token)
    - `$expiry = date('Y-m-d H:i:s', strtotime('+1 hour'))`
-   - `UPDATE users SET reset_token = ?, reset_token_expires = ? WHERE id = ?`
+   - `UPDATE users SET reset_token = ?, reset_token_expires = ? WHERE id = ?` — uses `$user['id']`
    - `error_log("GREENCASH DEV RESET LINK: " . APP_URL . "/reset-password.php?token=$token")`
 5. Always: `setFlash('info', 'If that email is registered, a password reset link has been sent.')` → `redirect('forgot-password.php')`
 
@@ -184,8 +190,9 @@ POST handler:
 |---|---|---|---|
 | `ip_login` | IP address | 5 | 15 minutes |
 | `admin_login` | Email address | 10 | 30 minutes |
+| `otp_verify` | User ID (string) | 5 | 15 minutes |
 
-Both contexts are checked and incremented on every failed attempt. Both are reset on successful password verification (before OTP step).
+`ip_login` and `admin_login` are checked and incremented on password failure; both reset on success. `otp_verify` is checked and incremented on OTP failure; reset on OTP success. A locked `otp_verify` clears the session and sends the user back to `login.php`.
 
 ---
 
