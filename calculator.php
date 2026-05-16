@@ -4,6 +4,7 @@ $page_title = 'Loan Calculator';
 include 'includes/header.php';
 ?>
 
+<section class="py-5">
 <div class="row justify-content-center">
     <div class="col-lg-7">
         <div class="text-center mb-4">
@@ -36,7 +37,7 @@ include 'includes/header.php';
                 <span class="value" id="totalRepayment">R 5,750.00</span>
             </div>
 
-            <a href="<?= APP_URL ?>/apply.php" class="btn btn-gc w-100 mt-4 py-2">
+            <a href="<?= htmlspecialchars(APP_URL, ENT_QUOTES, 'UTF-8') ?>/apply.php" class="btn btn-gc w-100 mt-4 py-2">
                 <i class="bi bi-pencil-square me-2"></i>Apply Now
             </a>
             <p class="text-center text-muted small mt-2 mb-0">
@@ -45,5 +46,6 @@ include 'includes/header.php';
         </div>
     </div>
 </div>
+</section>
 
 <?php include 'includes/footer.php'; ?>
