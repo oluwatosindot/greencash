@@ -12,7 +12,7 @@ include 'includes/header.php';
                 <h1 class="mb-3">Get Your Salary In Advance — Today</h1>
                 <p class="mb-4">Fast, secure salary advance loans from R1,000 to R10,000. Repaid in 1 month. No hidden fees.</p>
                 <div class="d-flex gap-3 flex-wrap">
-                    <a href="<?= APP_URL ?>/apply.php" class="btn btn-light btn-lg fw-semibold px-4">
+                    <a href="<?= htmlspecialchars(APP_URL, ENT_QUOTES, 'UTF-8') ?>/apply.php" class="btn btn-light btn-lg fw-semibold px-4">
                         <i class="bi bi-pencil-square me-2"></i>Apply Now
                     </a>
                     <a href="#calculator" id="checkRate" class="btn btn-outline-light btn-lg px-4">
@@ -96,7 +96,7 @@ include 'includes/header.php';
                 <span class="value" id="totalRepayment">R 5,750.00</span>
             </div>
 
-            <a href="<?= APP_URL ?>/apply.php" class="btn btn-gc w-100 mt-4 py-2">
+            <a href="<?= htmlspecialchars(APP_URL, ENT_QUOTES, 'UTF-8') ?>/apply.php" class="btn btn-gc w-100 mt-4 py-2">
                 <i class="bi bi-pencil-square me-2"></i>Apply Now
             </a>
             <p class="text-center text-muted small mt-2 mb-0">No obligation. Takes less than 5 minutes.</p>
