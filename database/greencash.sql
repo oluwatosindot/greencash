@@ -246,4 +246,19 @@ CREATE TABLE IF NOT EXISTS `broker_notifications` (
 INSERT INTO `users` (`first_name`, `last_name`, `email`, `password`, `role`, `status`)
 VALUES ('Admin', 'User', 'admin@greencash.co.za', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin', 'active');
 
+-- ============================================================
+-- CONTACT MESSAGES
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `contact_messages` (
+    `id` INT(11) NOT NULL AUTO_INCREMENT,
+    `name` VARCHAR(100) NOT NULL,
+    `email` VARCHAR(255) NOT NULL,
+    `phone` VARCHAR(20) DEFAULT NULL,
+    `subject` VARCHAR(255) NOT NULL,
+    `message` TEXT NOT NULL,
+    `ip_address` VARCHAR(45) DEFAULT NULL,
+    `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 SET FOREIGN_KEY_CHECKS=1;
