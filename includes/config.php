@@ -249,3 +249,16 @@ function resetRateLimit(PDO $pdo, string $identifier, string $type): void {
 function generateOTP(): string {
     return str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
 }
+
+/**
+ * Send application confirmation email (stub — replaced by PHPMailer in Step 7).
+ */
+function sendApplicationConfirmation(array $data): void {
+    error_log(sprintf(
+        'GREENCASH DEV CONFIRMATION: ref=%s name=%s email=%s amount=%.2f',
+        $data['reference_number'],
+        $data['first_name'],
+        $data['email'],
+        $data['loan_amount']
+    ));
+}
