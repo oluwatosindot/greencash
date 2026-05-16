@@ -194,3 +194,58 @@ function getClientIp(): string {
     }
     return 'unknown';
 }
+
+/**
+ * Returns true if identifier is currently rate-limited / locked out, false if OK.
+ */
+function checkRateLimit(PDO $pdo, string $identifier, string $type, int $maxAttempts, int $lockMinutes): bool {
+    $stmt = $pdo->prepare(
+        "SELECT attempts, locked_until FROM rate_limits
+         WHERE identifier = ? AND attempt_type = ? LIMIT 1"
+    );
+    $stmt->execute([$identifier, $type]);
+    $row = $stmt->fetch();
+
+    if (!$row) return false;
+
+    if ($row['locked_until'] && strtotime($row['locked_until']) > time()) {
+        return true; // still locked
+    }
+
+    return false;
+}
+
+/**
+ * Increment attempt counter; lock identifier once maxAttempts is reached.
+ * Single atomic upsert — ON DUPLICATE KEY UPDATE.
+ * NOTE: MySQL evaluates IF() against the pre-increment value of `attempts`.
+ * So `attempts + 1 >= $maxAttempts` correctly locks on the Nth attempt
+ * (e.g. old=9, 9+1=10 >= 10 → lock fires on the 10th attempt as intended).
+ */
+function incrementRateLimit(PDO $pdo, string $identifier, string $type, int $maxAttempts, int $lockMinutes): void {
+    $pdo->prepare(
+        "INSERT INTO rate_limits (identifier, attempt_type, attempts, last_attempt_at)
+         VALUES (?, ?, 1, NOW())
+         ON DUPLICATE KEY UPDATE
+            attempts        = attempts + 1,
+            last_attempt_at = NOW(),
+            locked_until    = IF(attempts + 1 >= ?, DATE_ADD(NOW(), INTERVAL ? MINUTE), locked_until)"
+    )->execute([$identifier, $type, $maxAttempts, $lockMinutes]);
+}
+
+/**
+ * Reset rate limit counter and lock on successful login.
+ */
+function resetRateLimit(PDO $pdo, string $identifier, string $type): void {
+    $pdo->prepare(
+        "UPDATE rate_limits SET attempts = 0, locked_until = NULL
+         WHERE identifier = ? AND attempt_type = ?"
+    )->execute([$identifier, $type]);
+}
+
+/**
+ * Generate a cryptographically random 6-digit OTP string (zero-padded).
+ */
+function generateOTP(): string {
+    return str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+}
