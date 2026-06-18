@@ -278,4 +278,22 @@ include 'includes/header.php';
     </div>
 </section>
 
+<!-- ============ FAQ ============ -->
+<section class="block" id="faq" style="background:var(--paper-2)">
+    <div class="wrap">
+        <div class="sec-head">
+            <div class="kicker">Good to know</div>
+            <h2>Frequently asked questions</h2>
+        </div>
+        <div class="faq">
+            <div class="q"><button type="button">Who can apply for a GreenCash loan?<span class="pm">+</span></button><div class="ans"><p>You must be a salaried employee, 18 or older, a South African citizen or permanent resident, with a valid SA ID, an active bank account into which your salary is paid, and proof of income.</p></div></div>
+            <div class="q"><button type="button">How much can I borrow?<span class="pm">+</span></button><div class="ans"><p>Loans range from R<?= number_format(MIN_LOAN_AMOUNT, 0, '.', ' ') ?> to R<?= number_format(MAX_LOAN_AMOUNT, 0, '.', ' ') ?> depending on your income and affordability assessment. First-time customers may start with a lower limit that grows as you build a good repayment history.</p></div></div>
+            <div class="q"><button type="button">How fast will I get my money?<span class="pm">+</span></button><div class="ans"><p>Applications are processed quickly, often within minutes during business operations. Once approved and accepted, funds are paid directly to your bank account. Actual payout timing depends on your bank.</p></div></div>
+            <div class="q"><button type="button">What documents do I need?<span class="pm">+</span></button><div class="ans"><p>A copy of your SA ID, your most recent payslip, three months of bank statements, and proof of residential address. You can upload these directly in the application form above.</p></div></div>
+            <div class="q"><button type="button">What does earned wage access mean?<span class="pm">+</span></button><div class="ans"><p>If your employer partners with GreenCash, you can draw down a portion of the salary you've already worked for during the current pay cycle, rather than waiting until payday.</p></div></div>
+            <div class="q"><button type="button">Is my information safe?<span class="pm">+</span></button><div class="ans"><p>Yes. We handle your personal information securely and in line with South Africa's Protection of Personal Information Act (POPIA). Your data is used only to assess and manage your application.</p></div></div>
+        </div>
+    </div>
+</section>
+
 <?php include 'includes/footer.php'; ?>
