@@ -4,7 +4,27 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Load environment
+// Auto-detect APP_URL from the request so the same code works on localhost,
+// ngrok previews, and the final production domain without env edits.
+// CLI scripts (cron, php -l) fall through to env.php's static APP_URL.
+if (PHP_SAPI !== 'cli' && !empty($_SERVER['HTTP_HOST'])) {
+    $_scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+    if (!empty($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
+        // ngrok / Cloudflare / any reverse proxy advertises the original scheme here
+        $_scheme = explode(',', $_SERVER['HTTP_X_FORWARDED_PROTO'])[0];
+    }
+    // Derive base path from the document root (works for both /greencash and /).
+    $_basePath = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'])), '/');
+    // Strip per-page subdirs like /admin so the base is the app root.
+    if (preg_match('#^(/[^/]+)(/.*)?$#', $_basePath, $m) && $m[1] !== '/admin' && $m[1] !== '/includes') {
+        $_basePath = $m[1];
+    } else {
+        $_basePath = '';
+    }
+    define('APP_URL', $_scheme . '://' . $_SERVER['HTTP_HOST'] . $_basePath);
+}
+
+// Load environment (defines APP_URL only if we didn't above — define() is no-op on existing constants)
 require_once __DIR__ . '/env.php';
 
 // Application constants
