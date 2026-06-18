@@ -1,56 +1,131 @@
-/* ============================================================
-   Green Cash — main.js
-   Calculator widget logic. Loaded by footer.php on all public pages.
-   IMPORTANT: Guard all getElementById calls — this script runs on
-   every public page, most of which do not have a calculator widget.
-   ============================================================ */
+// Year (footer)
+const yr = document.getElementById('yr');
+if (yr) yr.textContent = new Date().getFullYear();
 
-document.addEventListener('DOMContentLoaded', function () {
+// Flash dismisser
+document.querySelectorAll('.flash .x').forEach(btn =>
+  btn.addEventListener('click', () => btn.closest('.flash').remove())
+);
 
-    // ---- Loan Calculator ----
-    const FEE_RATE = 0.15; // 15% flat service fee
+// Mobile nav burger
+const burger = document.getElementById('burger');
+const navlinks = document.getElementById('navlinks');
+if (burger && navlinks) {
+  burger.addEventListener('click', () => navlinks.classList.toggle('open'));
+  navlinks.querySelectorAll('a').forEach(a =>
+    a.addEventListener('click', () => navlinks.classList.remove('open'))
+  );
+}
 
-    // Null guard: main.js loads on every public page via footer.php.
-    // Pages without the calculator widget return null — bail out early.
-    // All element lookups must come AFTER this guard.
-    const slider = document.getElementById('loanSlider');
-    if (!slider) return;
+// Helper: fmt + paintSlider — used by both the hero calculator and any standalone slider
+const fmt = n => 'R ' + Math.round(n).toLocaleString('en-ZA');
+function paintSlider(el){
+  const min = +el.min, max = +el.max;
+  const p = ((el.value - min) / (max - min)) * 100;
+  el.style.setProperty('--p', p + '%');
+}
 
-    const elAmount    = document.getElementById('loanAmount');
-    const elFee       = document.getElementById('serviceFee');
-    const elRepayment = document.getElementById('totalRepayment');
-    const elSliderVal = document.getElementById('sliderValue');
+// Calculator (hero card on index.php)
+const amt = document.getElementById('amt');
+if (amt) {
+  const amtVal = document.getElementById('amtVal');
+  const oPrincipal = document.getElementById('oPrincipal');
+  const oFees = document.getElementById('oFees');
+  const oTotal = document.getElementById('oTotal');
+  const FEE_RATE = 0.15; // matches includes/config.php / apply.php backend
+  function calc(){
+    const a = +amt.value;
+    const fee = a * FEE_RATE;
+    amtVal.textContent = fmt(a);
+    if (oPrincipal) oPrincipal.textContent = fmt(a);
+    if (oFees) oFees.textContent = fmt(fee);
+    if (oTotal) oTotal.textContent = fmt(a + fee);
+    paintSlider(amt);
+  }
+  amt.addEventListener('input', calc);
+  calc();
+}
 
-    // Format as "R 1,000.00" — regex-based for consistent comma separators.
-    // Do NOT use toLocaleString('en-ZA') — SA locale uses spaces, not commas.
-    function formatR(n) {
-        return 'R ' + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+// Form Step 3 loan-amount slider — mirrors value into the label & paints the fill
+const loanSlider = document.getElementById('loanAmountSlider');
+const loanSliderLabel = document.getElementById('loanAmtVal');
+if (loanSlider && loanSliderLabel) {
+  const sync = () => { loanSliderLabel.textContent = fmt(+loanSlider.value); paintSlider(loanSlider); };
+  loanSlider.addEventListener('input', sync);
+  sync();
+}
+
+// Multi-step apply form (index.php #apply)
+const loanForm = document.getElementById('loanForm');
+if (loanForm) {
+  const steps = [...loanForm.querySelectorAll('.fstep')];
+  const bar = [...document.querySelectorAll('#stepsBar .sb')];
+  let cur = 0;
+
+  function goto(i){
+    steps.forEach(s => s.classList.remove('active'));
+    steps[i].classList.add('active');
+    bar.forEach((b, bi) => {
+      b.classList.toggle('active', bi === i);
+      b.classList.toggle('done', bi < i);
+    });
+    cur = i;
+    document.getElementById('apply').scrollIntoView({behavior: 'smooth'});
+  }
+
+  function validateStep(i){
+    let ok = true;
+    steps[i].querySelectorAll('[required]').forEach(inp => {
+      const field = inp.closest('.field') || inp.closest('.check');
+      let bad = (inp.type === 'checkbox') ? !inp.checked : !inp.value.trim();
+      if (inp.name === 'id_number' && inp.value && !/^\d{13}$/.test(inp.value.trim())) bad = true;
+      if (inp.type === 'email' && inp.value && !/^[^@]+@[^@]+\.[^@]+$/.test(inp.value)) bad = true;
+      if (field) field.classList.toggle('invalid', bad);
+      if (bad) ok = false;
+    });
+    return ok;
+  }
+
+  loanForm.querySelectorAll('[data-next]').forEach(b =>
+    b.addEventListener('click', () => { if (validateStep(cur)) goto(cur + 1); })
+  );
+  loanForm.querySelectorAll('[data-prev]').forEach(b =>
+    b.addEventListener('click', () => goto(cur - 1))
+  );
+
+  // File list display
+  ['id_document', 'payslip', 'bank_statement'].forEach(name => {
+    const inp = loanForm.querySelector(`input[name="${name}"]`);
+    if (!inp) return;
+    inp.addEventListener('change', () => {
+      const label = inp.closest('.field').querySelector('.file-chosen');
+      if (label) label.textContent = inp.files.length ? inp.files[0].name : '';
+    });
+  });
+
+  // Sync calculator amount into Step 3's loan_amount input
+  const loanAmount = loanForm.querySelector('input[name="loan_amount"]');
+  document.querySelectorAll('a[href$="#apply"]').forEach(a => {
+    a.addEventListener('click', () => {
+      if (loanAmount && amt && !loanAmount.value) loanAmount.value = amt.value;
+    });
+  });
+  // NOTE: No submit handler — the form posts to apply.php for real backend handling.
+}
+
+// FAQ accordion
+document.querySelectorAll('.q button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const q = btn.parentElement;
+    const ans = q.querySelector('.ans');
+    const open = q.classList.contains('open');
+    document.querySelectorAll('.q').forEach(x => {
+      x.classList.remove('open');
+      x.querySelector('.ans').style.maxHeight = null;
+    });
+    if (!open) {
+      q.classList.add('open');
+      ans.style.maxHeight = ans.scrollHeight + 'px';
     }
-
-    function updateCalc() {
-        var loan  = parseFloat(slider.value);
-        var fee   = loan * FEE_RATE;
-        var total = loan + fee;
-
-        if (elSliderVal)  elSliderVal.textContent  = formatR(loan);
-        if (elAmount)     elAmount.textContent      = formatR(loan);
-        if (elFee)        elFee.textContent         = formatR(fee);
-        if (elRepayment)  elRepayment.textContent   = formatR(total);
-    }
-
-    slider.addEventListener('input', updateCalc);
-    updateCalc(); // populate on page load
-
-    // ---- Smooth scroll for "Check My Rate" CTA on homepage ----
-    var checkRateBtn = document.getElementById('checkRate');
-    if (checkRateBtn) {
-        checkRateBtn.addEventListener('click', function (e) {
-            e.preventDefault();
-            var target = document.getElementById('calculator');
-            if (target) {
-                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-        });
-    }
-
+  });
 });
