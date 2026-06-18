@@ -19,3 +19,6 @@ define('MAIL_FROM_EMAIL', 'noreply@greencash.co.za');
 
 // Admin notification email
 define('ADMIN_EMAIL', 'admin@greencash.co.za');
+
+// Partnership enquiries (Employers band CTA on index.php)
+define('PARTNERSHIP_EMAIL', 'partners@greencash.co.za');
