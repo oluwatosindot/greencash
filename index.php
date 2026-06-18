@@ -116,4 +116,166 @@ include 'includes/header.php';
     </div>
 </section>
 
+<!-- ============ APPLY ============ -->
+<section class="apply" id="apply">
+    <div class="wrap">
+        <div class="sec-head">
+            <div class="kicker">Start now</div>
+            <h2>Apply for your loan</h2>
+            <p>Complete the secure application below. It takes about 5 minutes. All fields marked with <span style="color:var(--yellow)">*</span> are required.</p>
+        </div>
+
+        <div class="form-shell">
+            <div class="steps-bar" id="stepsBar">
+                <div class="sb active" data-step="0"><div class="dot">1</div><span class="lbl">Personal</span></div>
+                <div class="sb" data-step="1"><div class="dot">2</div><span class="lbl">Employment</span></div>
+                <div class="sb" data-step="2"><div class="dot">3</div><span class="lbl">Financial</span></div>
+                <div class="sb" data-step="3"><div class="dot">4</div><span class="lbl">Documents</span></div>
+            </div>
+
+            <form class="form-body" id="loanForm" method="post" action="<?= htmlspecialchars(APP_URL, ENT_QUOTES, 'UTF-8') ?>/apply.php" enctype="multipart/form-data" novalidate>
+                <?= csrfField() ?>
+
+                <!-- STEP 1: PERSONAL -->
+                <div class="fstep active" data-step="0">
+                    <h3>Personal details</h3>
+                    <p class="desc">Tell us who you are. This must match your South African ID.</p>
+                    <div class="fgrid">
+                        <div class="field"><label>First name <span class="req">*</span></label><input name="first_name" required><div class="err">Please enter your first name.</div></div>
+                        <div class="field"><label>Last name <span class="req">*</span></label><input name="last_name" required><div class="err">Please enter your last name.</div></div>
+                        <div class="field"><label>Other names</label><input name="other_names"></div>
+                        <div class="field"><label>SA ID number <span class="req">*</span></label><input name="id_number" inputmode="numeric" maxlength="13" required><div class="err">Enter a valid 13-digit ID number.</div></div>
+                        <div class="field"><label>Mobile number <span class="req">*</span></label><input name="phone" inputmode="tel" placeholder="072 123 4567" required><div class="err">Please enter a valid mobile number.</div></div>
+                        <div class="field"><label>Email address <span class="req">*</span></label><input type="email" name="email" placeholder="you@email.com" required><div class="err">Please enter a valid email.</div></div>
+                        <div class="field full"><label>Residential address <span class="req">*</span></label><input name="address" placeholder="Street, suburb" required><div class="err">Please enter your address.</div></div>
+                        <div class="field"><label>City / Town <span class="req">*</span></label><input name="city" required><div class="err">Required.</div></div>
+                        <div class="field"><label>Province <span class="req">*</span></label>
+                            <select name="province" required>
+                                <option value="">Select…</option>
+                                <option value="Gauteng">Gauteng</option>
+                                <option value="Western Cape">Western Cape</option>
+                                <option value="KwaZulu-Natal">KwaZulu-Natal</option>
+                                <option value="Eastern Cape">Eastern Cape</option>
+                                <option value="Limpopo">Limpopo</option>
+                                <option value="Mpumalanga">Mpumalanga</option>
+                                <option value="North West">North West</option>
+                                <option value="Free State">Free State</option>
+                                <option value="Northern Cape">Northern Cape</option>
+                            </select>
+                            <div class="err">Please select your province.</div>
+                        </div>
+                        <div class="field"><label>Postal code</label><input name="zip_code" inputmode="numeric" maxlength="10"></div>
+                    </div>
+                    <div class="form-nav">
+                        <span></span>
+                        <button type="button" class="btn btn-primary" data-next>Continue →</button>
+                    </div>
+                </div>
+
+                <!-- STEP 2: EMPLOYMENT -->
+                <div class="fstep" data-step="1">
+                    <h3>Employment</h3>
+                    <p class="desc">We use this to assess affordability, as required by the National Credit Act.</p>
+                    <div class="fgrid">
+                        <div class="field"><label>Employment status <span class="req">*</span></label>
+                            <select name="employment_status" required>
+                                <option value="">Select…</option>
+                                <option value="employed">Permanent / full-time</option>
+                                <option value="contract">Contract</option>
+                                <option value="self_employed">Self-employed</option>
+                            </select>
+                            <div class="err">Required.</div>
+                        </div>
+                        <div class="field"><label>Employment duration <span class="req">*</span></label>
+                            <select name="employment_duration" required>
+                                <option value="">Select…</option>
+                                <option value="less_3m">Less than 3 months</option>
+                                <option value="3_6m">3 – 6 months</option>
+                                <option value="6_12m">6 – 12 months</option>
+                                <option value="1_2y">1 – 2 years</option>
+                                <option value="2_5y">2 – 5 years</option>
+                                <option value="5y_plus">5+ years</option>
+                            </select>
+                            <div class="err">Required.</div>
+                        </div>
+                        <div class="field full"><label>Employer name <span class="req">*</span></label><input name="employer_name" required><div class="err">Required.</div></div>
+                        <div class="field"><label>Employer contact <span class="req">*</span></label><input name="employer_contact" inputmode="tel" required><div class="err">Required.</div></div>
+                        <div class="field"><label>Job title <span class="req">*</span></label><input name="job_title" required><div class="err">Required.</div></div>
+                    </div>
+                    <div class="form-nav">
+                        <button type="button" class="btn btn-ghost" data-prev>← Back</button>
+                        <button type="button" class="btn btn-primary" data-next>Continue →</button>
+                    </div>
+                </div>
+
+                <!-- STEP 3: FINANCIAL -->
+                <div class="fstep" data-step="2">
+                    <h3>Financial</h3>
+                    <p class="desc">Tell us about your income and the loan you need.</p>
+                    <div class="fgrid">
+                        <div class="field"><label>Net monthly salary (R) <span class="req">*</span></label><input name="salary_amount" inputmode="numeric" required><div class="err">Required.</div></div>
+                        <div class="field"><label>Next pay date <span class="req">*</span></label><input type="date" name="next_payday_date" required><div class="err">Required.</div></div>
+                        <div class="field full">
+                            <label>Loan amount (R) <span class="req">*</span> <span class="val" id="loanAmtVal">R 5 000</span></label>
+                            <input type="range" name="loan_amount" id="loanAmountSlider" min="<?= (int) MIN_LOAN_AMOUNT ?>" max="<?= (int) MAX_LOAN_AMOUNT ?>" step="500" value="5000">
+                        </div>
+                        <div class="field"><label>Rent (R/mo)</label><input name="rent" inputmode="numeric" placeholder="0"></div>
+                        <div class="field"><label>Food (R/mo)</label><input name="food" inputmode="numeric" placeholder="0"></div>
+                        <div class="field"><label>Transport (R/mo)</label><input name="transport" inputmode="numeric" placeholder="0"></div>
+                        <div class="field"><label>Other expenses (R/mo)</label><input name="other_expenses" inputmode="numeric" placeholder="0"></div>
+                    </div>
+                    <div class="form-nav">
+                        <button type="button" class="btn btn-ghost" data-prev>← Back</button>
+                        <button type="button" class="btn btn-primary" data-next>Continue →</button>
+                    </div>
+                </div>
+
+                <!-- STEP 4: DOCUMENTS & CONSENT -->
+                <div class="fstep" data-step="3">
+                    <h3>Documents &amp; consent</h3>
+                    <p class="desc">Upload supporting documents and confirm your consent to proceed.</p>
+                    <div class="field full">
+                        <label>SA ID document <span class="req">*</span></label>
+                        <label class="upload" for="id_document">
+                            <div class="ui">📎 <span class="ub">Click to upload</span> ID copy (PDF/JPG/PNG)</div>
+                        </label>
+                        <input type="file" id="id_document" name="id_document" accept=".pdf,.jpg,.jpeg,.png" required style="display:none">
+                        <div class="hint file-chosen"></div>
+                        <div class="err">Please upload your SA ID.</div>
+                    </div>
+                    <div class="field full">
+                        <label>Latest payslip <span class="req">*</span></label>
+                        <label class="upload" for="payslip">
+                            <div class="ui">📎 <span class="ub">Click to upload</span> latest payslip (PDF/JPG/PNG)</div>
+                        </label>
+                        <input type="file" id="payslip" name="payslip" accept=".pdf,.jpg,.jpeg,.png" required style="display:none">
+                        <div class="hint file-chosen"></div>
+                        <div class="err">Please upload your latest payslip.</div>
+                    </div>
+                    <div class="field full">
+                        <label>3 months bank statements <span class="req">*</span></label>
+                        <label class="upload" for="bank_statement">
+                            <div class="ui">📎 <span class="ub">Click to upload</span> bank statements (single PDF or image)</div>
+                        </label>
+                        <input type="file" id="bank_statement" name="bank_statement" accept=".pdf,.jpg,.jpeg,.png" required style="display:none">
+                        <div class="hint file-chosen"></div>
+                        <div class="err">Please upload your bank statements.</div>
+                    </div>
+
+                    <div style="margin-top:18px">
+                        <div class="check"><input type="checkbox" required><span>I confirm the information provided is true and complete, and I consent to a credit &amp; affordability assessment.</span></div>
+                        <div class="check"><input type="checkbox" required><span>I agree to the processing of my personal information in line with the <a href="<?= htmlspecialchars(APP_URL, ENT_QUOTES, 'UTF-8') ?>/privacy-policy.php">Privacy Policy (POPIA)</a>.</span></div>
+                        <div class="check"><input type="checkbox" required><span>I have read and accept the <a href="<?= htmlspecialchars(APP_URL, ENT_QUOTES, 'UTF-8') ?>/terms-and-conditions.php">Terms &amp; Conditions</a> and pre-agreement disclosure.</span></div>
+                    </div>
+
+                    <div class="form-nav">
+                        <button type="button" class="btn btn-ghost" data-prev>← Back</button>
+                        <button type="submit" name="submit_application" class="btn btn-primary">Submit application ✓</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
 <?php include 'includes/footer.php'; ?>
