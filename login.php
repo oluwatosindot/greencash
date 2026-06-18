@@ -62,76 +62,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Show flash (e.g. from OTP lockout redirect)
-$flash = getFlash();
+$page_title = 'Sign in';
+include 'includes/header.php';
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Login — <?= htmlspecialchars(APP_NAME, ENT_QUOTES, 'UTF-8') ?></title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <style>
-        body { background: #f8f9fa; font-family: 'Inter', sans-serif; }
-        .auth-wrap { max-width: 420px; margin: 80px auto; padding: 0 1rem; }
-        .brand { color: #2E7D32; font-weight: 700; font-size: 1.35rem; }
-    </style>
-</head>
-<body>
-<div class="auth-wrap">
-    <div class="text-center mb-4">
-        <div class="brand">
-            <i class="bi bi-cash-stack me-1"></i><?= htmlspecialchars(APP_NAME, ENT_QUOTES, 'UTF-8') ?>
+<section class="block" style="background:var(--paper);min-height:calc(100vh - 280px)">
+    <div class="wrap" style="max-width:480px">
+        <div class="sec-head">
+            <h2>Sign in to your account</h2>
+            <p>Welcome back.</p>
         </div>
-        <p class="text-muted small mt-1">Admin Portal</p>
-    </div>
-
-    <div class="card shadow-sm border-0">
-        <div class="card-body p-4">
-            <h5 class="card-title mb-4">Sign In</h5>
-
-            <?php if ($flash): ?>
-                <?php
-                $allowedTypes = ['success', 'danger', 'warning', 'info'];
-                $flashType = in_array($flash['type'], $allowedTypes, true) ? $flash['type'] : 'info';
-                if ($flash['type'] === 'error') $flashType = 'danger';
-                ?>
-                <div class="alert alert-<?= $flashType ?>">
-                    <?= sanitize($flash['message']) ?>
-                </div>
-            <?php endif; ?>
-
-            <?php if ($error): ?>
-                <div class="alert alert-danger"><?= sanitize($error) ?></div>
-            <?php endif; ?>
-
-            <form method="POST" action="login.php">
-                <?= csrfField() ?>
-
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">Email Address</label>
-                    <input type="email" name="email" class="form-control" required autofocus
-                           value="<?= sanitize($_POST['email'] ?? '') ?>">
-                </div>
-
-                <div class="mb-4">
-                    <label class="form-label fw-semibold">Password</label>
-                    <input type="password" name="password" class="form-control" required>
-                </div>
-
-                <button type="submit" class="btn btn-success w-100 py-2">Sign In</button>
-            </form>
-
-            <div class="text-center mt-3">
-                <a href="forgot-password.php" class="text-muted small text-decoration-none">
-                    Forgot your password?
-                </a>
+        <?php if ($error): ?>
+            <div class="flash flash--error" style="margin-bottom:20px">
+                <span><?= sanitize($error) ?></span>
             </div>
+        <?php endif; ?>
+        <div class="form-shell">
+            <form class="form-body" method="post" action="<?= htmlspecialchars(APP_URL, ENT_QUOTES, 'UTF-8') ?>/login.php" novalidate>
+                <?= csrfField() ?>
+                <div class="field">
+                    <label>Email <span class="req">*</span></label>
+                    <input type="email" name="email" required autofocus value="<?= isset($_POST['email']) ? htmlspecialchars($_POST['email'], ENT_QUOTES, 'UTF-8') : '' ?>">
+                </div>
+                <div class="field">
+                    <label>Password <span class="req">*</span></label>
+                    <input type="password" name="password" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Sign in</button>
+            </form>
         </div>
+        <p style="text-align:center;margin-top:18px">
+            <a href="<?= htmlspecialchars(APP_URL, ENT_QUOTES, 'UTF-8') ?>/forgot-password.php" style="color:var(--green-deep)">Forgot password?</a>
+        </p>
     </div>
-</div>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+</section>
+<?php include 'includes/footer.php'; ?>
