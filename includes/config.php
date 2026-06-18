@@ -4,27 +4,59 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Auto-detect APP_URL from the request so the same code works on localhost,
-// ngrok previews, and the final production domain without env edits.
-// CLI scripts (cron, php -l) fall through to env.php's static APP_URL.
+// Derive APP_URL from the request — but ONLY for dev/preview hostnames we explicitly
+// trust. Production must set a static APP_URL in env.php so a forged Host header
+// can never poison password-reset links, redirects, or asset URLs.
+//
+// Allowed dev/preview hosts:
+//   - localhost / 127.0.0.1 / ::1            (XAMPP)
+//   - *.ngrok-free.dev / *.ngrok-free.app / *.ngrok.io  (ngrok preview)
+//   - *.trycloudflare.com                    (Cloudflare quick tunnel)
+//
+// Any other Host header falls through to env.php's static APP_URL, so production
+// (e.g. greencash.co.za) only ever uses the canonical domain set in env.
 if (PHP_SAPI !== 'cli' && !empty($_SERVER['HTTP_HOST'])) {
-    $_scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-    if (!empty($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
-        // ngrok / Cloudflare / any reverse proxy advertises the original scheme here
-        $_scheme = explode(',', $_SERVER['HTTP_X_FORWARDED_PROTO'])[0];
+    $_hostRaw  = $_SERVER['HTTP_HOST'];
+    $_hostBare = strtolower(preg_replace('/:\d+$/', '', $_hostRaw));
+
+    $_devHosts        = ['localhost', '127.0.0.1', '::1'];
+    $_previewSuffixes = ['.ngrok-free.dev', '.ngrok-free.app', '.ngrok.io', '.trycloudflare.com'];
+
+    $_hostAllowed = in_array($_hostBare, $_devHosts, true);
+    if (!$_hostAllowed) {
+        foreach ($_previewSuffixes as $_suf) {
+            if (str_ends_with($_hostBare, $_suf)) { $_hostAllowed = true; break; }
+        }
     }
-    // Derive base path from the document root (works for both /greencash and /).
-    $_basePath = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'])), '/');
-    // Strip per-page subdirs like /admin so the base is the app root.
-    if (preg_match('#^(/[^/]+)(/.*)?$#', $_basePath, $m) && $m[1] !== '/admin' && $m[1] !== '/includes') {
-        $_basePath = $m[1];
-    } else {
-        $_basePath = '';
+
+    if ($_hostAllowed) {
+        $_scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        // Only honor X-Forwarded-Proto when the request reaches us from a trusted
+        // local proxy. ngrok's agent runs on this machine and connects to Apache
+        // via loopback, so trusting 127.0.0.1 / ::1 here is safe and sufficient.
+        $_trustedProxies = ['127.0.0.1', '::1'];
+        if (!empty($_SERVER['HTTP_X_FORWARDED_PROTO'])
+            && in_array($_SERVER['REMOTE_ADDR'] ?? '', $_trustedProxies, true)) {
+            $_scheme = explode(',', $_SERVER['HTTP_X_FORWARDED_PROTO'])[0];
+        }
+
+        // Base path: works for both /greencash subdirectory and root deploys.
+        $_basePath = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'])), '/');
+        if (preg_match('#^(/[^/]+)(/.*)?$#', $_basePath, $m)
+            && $m[1] !== '/admin' && $m[1] !== '/includes') {
+            $_basePath = $m[1];
+        } else {
+            $_basePath = '';
+        }
+
+        define('APP_URL', $_scheme . '://' . $_hostRaw . $_basePath);
     }
-    define('APP_URL', $_scheme . '://' . $_SERVER['HTTP_HOST'] . $_basePath);
 }
 
-// Load environment (defines APP_URL only if we didn't above — define() is no-op on existing constants)
+// env.php's static APP_URL applies when:
+//   - CLI scripts (cron, php -l) — no HTTP_HOST to derive from
+//   - Production hostnames not on the allowlist — canonical URL prevents
+//     Host header injection from poisoning generated links
 require_once __DIR__ . '/env.php';
 
 // Application constants
