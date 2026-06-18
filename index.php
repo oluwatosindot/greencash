@@ -97,4 +97,23 @@ include 'includes/header.php';
     </div>
 </section>
 
+<!-- ============ EMPLOYERS ============ -->
+<section class="block" id="employers">
+    <div class="wrap">
+        <div class="band">
+            <div class="ct">
+                <h2>Partner with GreenCash for your team</h2>
+                <p>Give your employees responsible access to a portion of their earned salary — a powerful, no-cost financial wellness benefit that reduces stress and boosts retention.</p>
+                <a href="mailto:<?= htmlspecialchars(PARTNERSHIP_EMAIL, ENT_QUOTES, 'UTF-8') ?>?subject=Partnership%20enquiry" class="btn btn-yellow">Become a partner →</a>
+            </div>
+            <ul>
+                <li><span class="ck">✓</span><span>Zero cost to your business to set up.</span></li>
+                <li><span class="ck">✓</span><span>Reduces payroll advance requests and admin.</span></li>
+                <li><span class="ck">✓</span><span>Improves staff financial wellbeing &amp; morale.</span></li>
+                <li><span class="ck">✓</span><span>Fully managed, compliant and secure.</span></li>
+            </ul>
+        </div>
+    </div>
+</section>
+
 <?php include 'includes/footer.php'; ?>
