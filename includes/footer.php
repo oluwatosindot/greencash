@@ -23,8 +23,7 @@
             </div>
             <div class="foot-col foot-contact">
                 <h4>Contact</h4>
-                <b>29 Kariba Crescent, Ballito</b>
-                KwaZulu-Natal, South Africa<br>
+                <b>South Africa</b><br>
                 <b style="margin-top:8px">Open 24 hours</b>
                 +27 (0)78 517 7961<br>
                 info@greencash.co.za

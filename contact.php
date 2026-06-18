@@ -71,7 +71,7 @@ include 'includes/header.php';
         <div class="grid-3" style="grid-template-columns:1fr 2fr;align-items:start">
             <div class="card">
                 <h3 style="margin-bottom:18px">Reach us</h3>
-                <p><b>Address</b><br>29 Kariba Crescent, Ballito<br>KwaZulu-Natal</p>
+                <p><b>Location</b><br>South Africa</p>
                 <p style="margin-top:14px"><b>Phone / WhatsApp</b><br>+27 (0)78 517 7961</p>
                 <p style="margin-top:14px"><b>Email</b><br>info@greencash.co.za</p>
                 <p style="margin-top:14px"><b>Hours</b><br>24 hours / 7 days</p>
