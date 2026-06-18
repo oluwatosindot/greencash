@@ -253,7 +253,7 @@ section.block{padding:88px 0}
 .ref-no{font-family:'Sora';font-weight:700;color:var(--green-deep);font-size:20px;background:var(--paper);display:inline-block;padding:10px 22px;border-radius:12px;margin-top:14px;letter-spacing:.05em}
 
 /* ---------- FOOTER ---------- */
-footer{background:var(--ink);color:#9fb0a3;padding:64px 0 30px}
+footer{background:#000;color:#9fb0a3;padding:64px 0 30px}
 .foot-grid{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:36px;margin-bottom:44px}
 .foot-brand img{height:40px;margin-bottom:16px}
 .foot-brand p{font-size:14px;max-width:300px;line-height:1.7}
