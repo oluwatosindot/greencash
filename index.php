@@ -239,7 +239,7 @@ include 'includes/header.php';
                         <label class="upload" for="id_document">
                             <div class="ui">📎 <span class="ub">Click to upload</span> ID copy (PDF/JPG/PNG)</div>
                         </label>
-                        <input type="file" id="id_document" name="id_document" accept=".pdf,.jpg,.jpeg,.png" required style="display:none">
+                        <input type="file" id="id_document" name="id_document" accept=".pdf,.jpg,.jpeg,.png" required class="visually-hidden">
                         <div class="hint file-chosen"></div>
                         <div class="err">Please upload your SA ID.</div>
                     </div>
@@ -248,7 +248,7 @@ include 'includes/header.php';
                         <label class="upload" for="payslip">
                             <div class="ui">📎 <span class="ub">Click to upload</span> latest payslip (PDF/JPG/PNG)</div>
                         </label>
-                        <input type="file" id="payslip" name="payslip" accept=".pdf,.jpg,.jpeg,.png" required style="display:none">
+                        <input type="file" id="payslip" name="payslip" accept=".pdf,.jpg,.jpeg,.png" required class="visually-hidden">
                         <div class="hint file-chosen"></div>
                         <div class="err">Please upload your latest payslip.</div>
                     </div>
@@ -257,7 +257,7 @@ include 'includes/header.php';
                         <label class="upload" for="bank_statement">
                             <div class="ui">📎 <span class="ub">Click to upload</span> bank statements (single PDF or image)</div>
                         </label>
-                        <input type="file" id="bank_statement" name="bank_statement" accept=".pdf,.jpg,.jpeg,.png" required style="display:none">
+                        <input type="file" id="bank_statement" name="bank_statement" accept=".pdf,.jpg,.jpeg,.png" required class="visually-hidden">
                         <div class="hint file-chosen"></div>
                         <div class="err">Please upload your bank statements.</div>
                     </div>
