@@ -68,4 +68,33 @@ include 'includes/header.php';
     </div>
 </section>
 
+<!-- ============ PRODUCTS ============ -->
+<section class="block" id="products" style="background:var(--paper-2)">
+    <div class="wrap">
+        <div class="sec-head">
+            <div class="kicker">Our products</div>
+            <h2>Borrowing built around your payday</h2>
+            <p>Whether you need a small bridge or access to pay you've already earned, we have an option.</p>
+        </div>
+        <div class="grid-3">
+            <div class="card">
+                <div class="ico">💸</div>
+                <h3>Payday Loan</h3>
+                <p>A short-term loan from R<?= number_format(MIN_LOAN_AMOUNT, 0, '.', ' ') ?> to R<?= number_format(MAX_LOAN_AMOUNT, 0, '.', ' ') ?> to bridge you to your next salary.</p>
+            </div>
+            <div class="card">
+                <span class="tag">Popular</span>
+                <div class="ico y">📈</div>
+                <h3>Earned Wage Access</h3>
+                <p>Through partner employers, draw down a portion of the salary you've already worked for — before payday.</p>
+            </div>
+            <div class="card">
+                <div class="ico">🔁</div>
+                <h3>Repeat Customer</h3>
+                <p>Built a good track record with us? Enjoy faster approvals and higher limits on your next application.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
 <?php include 'includes/footer.php'; ?>
