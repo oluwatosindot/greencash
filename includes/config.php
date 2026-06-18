@@ -11,7 +11,7 @@ require_once __DIR__ . '/env.php';
 define('APP_VERSION', '1.0.0');
 define('CURRENCY', 'R');
 define('MIN_LOAN_AMOUNT', 1000);
-define('MAX_LOAN_AMOUNT', 10000);
+define('MAX_LOAN_AMOUNT', 8000);
 define('LOAN_TERM_MONTHS', 1);
 define('UPLOAD_DIR', __DIR__ . '/../uploads/');
 define('ABSPATH', realpath(__DIR__ . '/..') . DIRECTORY_SEPARATOR);

@@ -44,7 +44,7 @@ include 'includes/header.php';
 <!-- ============ STRIP ============ -->
 <div class="strip">
     <div class="wrap">
-        <span>📍 <b>Odyssey Mall, Ballito</b></span>
+        <span>📍 <b>29 Kariba Crescent, Ballito</b></span>
         <span>🔒 POPIA-aligned data handling</span>
         <span>⚡ Decisions in minutes</span>
         <span>🤝 Employer salary-advance partner</span>

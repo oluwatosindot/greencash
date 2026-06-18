@@ -23,11 +23,11 @@
             </div>
             <div class="foot-col foot-contact">
                 <h4>Contact</h4>
-                <b>Odyssey Mall, Ballito</b>
+                <b>29 Kariba Crescent, Ballito</b>
                 KwaZulu-Natal, South Africa<br>
                 <b style="margin-top:8px">Open 24 hours</b>
-                +27 (0)32 000 0000<br>
-                hello@greencash.co.za
+                +27 (0)78 517 7961<br>
+                info@greencash.co.za
             </div>
         </div>
         <div class="foot-bottom">

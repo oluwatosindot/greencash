@@ -25,7 +25,7 @@ include 'includes/header.php';
                     <?php if (!empty($app_reference)): ?>
                     <div class="ref-no"><?= htmlspecialchars($app_reference, ENT_QUOTES, 'UTF-8') ?></div>
                     <?php endif; ?>
-                    <p style="margin-top:18px;font-size:13px">Questions? Call us on <b>+27 (0)32 000 0000</b> &mdash; open 24 hours.</p>
+                    <p style="margin-top:18px;font-size:13px">Questions? Call us on <b>+27 (0)78 517 7961</b> &mdash; open 24 hours.</p>
                 </div>
             </div>
         </div>
