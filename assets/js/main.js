@@ -77,7 +77,10 @@ if (loanForm) {
     let ok = true;
     steps[i].querySelectorAll('[required]').forEach(inp => {
       const field = inp.closest('.field') || inp.closest('.check');
-      let bad = (inp.type === 'checkbox') ? !inp.checked : !inp.value.trim();
+      let bad;
+      if (inp.type === 'checkbox') bad = !inp.checked;
+      else if (inp.type === 'file') bad = inp.files.length === 0;
+      else bad = !inp.value.trim();
       if (inp.name === 'id_number' && inp.value && !/^\d{13}$/.test(inp.value.trim())) bad = true;
       if (inp.type === 'email' && inp.value && !/^[^@]+@[^@]+\.[^@]+$/.test(inp.value)) bad = true;
       if (field) field.classList.toggle('invalid', bad);
@@ -98,7 +101,9 @@ if (loanForm) {
     const inp = loanForm.querySelector(`input[name="${name}"]`);
     if (!inp) return;
     inp.addEventListener('change', () => {
-      const label = inp.closest('.field').querySelector('.file-chosen');
+      const field = inp.closest('.field');
+      if (!field) return;
+      const label = field.querySelector('.file-chosen');
       if (label) label.textContent = inp.files.length ? inp.files[0].name : '';
     });
   });
@@ -121,9 +126,10 @@ document.querySelectorAll('.q button').forEach(btn => {
     const open = q.classList.contains('open');
     document.querySelectorAll('.q').forEach(x => {
       x.classList.remove('open');
-      x.querySelector('.ans').style.maxHeight = null;
+      const ansEl = x.querySelector('.ans');
+      if (ansEl) ansEl.style.maxHeight = null;
     });
-    if (!open) {
+    if (!open && ans) {
       q.classList.add('open');
       ans.style.maxHeight = ans.scrollHeight + 'px';
     }
