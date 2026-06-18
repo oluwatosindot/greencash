@@ -22,3 +22,8 @@ define('ADMIN_EMAIL', 'admin@greencash.co.za');
 
 // Partnership enquiries (Employers band CTA on index.php)
 define('PARTNERSHIP_EMAIL', 'partners@greencash.co.za');
+
+// WhatsApp click-to-chat (floating button on every customer page)
+// International format, NO leading + or spaces (e.g. SA mobile: '27821234567').
+define('WHATSAPP_NUMBER', '27000000000');
+define('WHATSAPP_PREFILL_MESSAGE', "Hi GreenCash — I'd like to know more about a salary advance.");
