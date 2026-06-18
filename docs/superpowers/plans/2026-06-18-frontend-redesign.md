@@ -127,6 +127,14 @@ if (burger && navlinks) {
   );
 }
 
+// Helper: fmt + paintSlider — used by both the hero calculator and any standalone slider
+const fmt = n => 'R ' + Math.round(n).toLocaleString('en-ZA');
+function paintSlider(el){
+  const min = +el.min, max = +el.max;
+  const p = ((el.value - min) / (max - min)) * 100;
+  el.style.setProperty('--p', p + '%');
+}
+
 // Calculator (hero card on index.php)
 const amt = document.getElementById('amt');
 if (amt) {
@@ -135,12 +143,6 @@ if (amt) {
   const oFees = document.getElementById('oFees');
   const oTotal = document.getElementById('oTotal');
   const FEE_RATE = 0.15; // matches includes/config.php / apply.php backend
-  const fmt = n => 'R ' + Math.round(n).toLocaleString('en-ZA');
-  function paintSlider(el){
-    const min = +el.min, max = +el.max;
-    const p = ((el.value - min) / (max - min)) * 100;
-    el.style.setProperty('--p', p + '%');
-  }
   function calc(){
     const a = +amt.value;
     const fee = a * FEE_RATE;
@@ -152,6 +154,15 @@ if (amt) {
   }
   amt.addEventListener('input', calc);
   calc();
+}
+
+// Form Step 3 loan-amount slider — mirrors value into the label & paints the fill
+const loanSlider = document.getElementById('loanAmountSlider');
+const loanSliderLabel = document.getElementById('loanAmtVal');
+if (loanSlider && loanSliderLabel) {
+  const sync = () => { loanSliderLabel.textContent = fmt(+loanSlider.value); paintSlider(loanSlider); };
+  loanSlider.addEventListener('input', sync);
+  sync();
 }
 
 // Multi-step apply form (index.php #apply)
@@ -511,6 +522,8 @@ git commit -m "feat: rewrite index.php with artifact hero + calculator (apply.ph
 **Files:**
 - Modify: `index.php` (insert before the footer include)
 
+> **Drift guard for Tasks 3.2–3.6:** Each task inserts new markup **before** the existing `<?php include 'includes/footer.php'; ?>` line — do NOT add another footer include. After every insertion, confirm `grep -c "include 'includes/footer.php'" index.php` returns exactly `1`. Task 3.7 Step 1 does a final cross-check.
+
 - [ ] **Step 1: Insert these two sections after the closing `</section>` of the hero and before `<?php include 'includes/footer.php'; ?>`:**
 
 ```php
@@ -829,24 +842,7 @@ This is the biggest single addition (~150 lines). Take care with field names —
 </section>
 ```
 
-Then add this tiny script block at the very bottom of `index.php` **before** the footer include, to keep the Step 3 `loanAmountSlider` synced with its label:
-
-```php
-<script>
-(function(){
-  const s = document.getElementById('loanAmountSlider');
-  const v = document.getElementById('loanAmtVal');
-  if (!s || !v) return;
-  const fmt = n => 'R ' + Math.round(n).toLocaleString('en-ZA');
-  const sync = () => {
-    v.textContent = fmt(+s.value);
-    const min=+s.min, max=+s.max, p=((s.value-min)/(max-min))*100;
-    s.style.setProperty('--p', p+'%');
-  };
-  s.addEventListener('input', sync); sync();
-})();
-</script>
-```
+The `#loanAmountSlider` is wired up automatically by `main.js` (see Task 1.3 — the standalone-slider block). No inline `<script>` is needed in `index.php`.
 
 - [ ] **Step 2: Verify markup**
 
@@ -955,15 +951,33 @@ git commit -m "chore: remove calculator.php (calculator now lives in index.php h
 ### Task 4.1: Strip UI, keep POST handler, add GET state branches
 
 **Files:**
-- Modify: `apply.php` (currently 571 lines — keep the top ~200 lines that run the POST handler; replace the HTML body)
+- Modify: `apply.php` (currently 571 lines — keep the top ~200 lines that run the POST handler; replace everything else)
 
-- [ ] **Step 1: Identify the boundary**
+- [ ] **Step 1: Identify the boundary in the existing file**
 
-Open `apply.php`. Find the line that starts the HTML output (typically right before `include 'includes/header.php';` or where `<!DOCTYPE` was inlined). Everything **above** that point is the POST handler and stays. Everything below — the multi-step form HTML — gets replaced.
+Open `apply.php`. Find the line where HTML output begins (`include 'includes/header.php';` or inline `<!DOCTYPE`). Everything above that point is the POST handler and stays. Everything from that point down — the multi-step form HTML — gets deleted.
 
-- [ ] **Step 2: Replace the HTML body**
+- [ ] **Step 2: Add the GET-redirect branch BEFORE any output**
 
-Below the POST handler block, replace everything with:
+**Critical:** `header('Location: ...')` must execute before a single byte is sent. The existing duplicate-guard block already runs at the top of `apply.php` and sets `$alreadySubmitted`. Add this **immediately after** that duplicate-guard block, still in the file's top `<?php` section (before the existing `if ($_SERVER['REQUEST_METHOD'] === 'POST' …)` block) — well above any `include 'includes/header.php'` line:
+
+```php
+// GET without duplicate-guard session flag → redirect to inline form on index.php
+if (!$alreadySubmitted && $_SERVER['REQUEST_METHOD'] === 'GET') {
+    header('Location: ' . APP_URL . '/#apply', true, 302);
+    exit;
+}
+```
+
+Now the only way to reach the HTML output block below is:
+- POST that the handler decided to render errors for, OR
+- GET with `$alreadySubmitted = true`
+
+The POST handler already sets `$errors` for the render-errors case and the duplicate-guard `else` case redirects. So the HTML render only handles `$alreadySubmitted = true` and POST-with-errors.
+
+- [ ] **Step 3: Replace the HTML body block**
+
+After the POST handler (where the old `include 'includes/header.php';` line was), write:
 
 ```php
 <?php
@@ -986,39 +1000,57 @@ include 'includes/header.php';
         </div>
     </div>
 </section>
-<?php else: ?>
-<?php
-// Normal GET: redirect to the inline form on index.php
-header('Location: ' . APP_URL . '/#apply', true, 302);
-exit;
-?>
+<?php elseif (!empty($errors)): ?>
+<section class="block" style="background:var(--paper);min-height:calc(100vh - 280px)">
+    <div class="wrap" style="max-width:640px">
+        <div class="form-shell">
+            <div class="form-body">
+                <h3>We couldn't submit your application</h3>
+                <p class="desc">Please fix the issues below and try again from the form on the home page.</p>
+                <ul style="margin:18px 0;padding-left:20px;color:#d33">
+                    <?php foreach ($errors as $err): ?>
+                    <li style="margin-bottom:6px"><?= htmlspecialchars($err, ENT_QUOTES, 'UTF-8') ?></li>
+                    <?php endforeach; ?>
+                </ul>
+                <a href="<?= htmlspecialchars(APP_URL, ENT_QUOTES, 'UTF-8') ?>/#apply" class="btn btn-primary">← Back to the form</a>
+            </div>
+        </div>
+    </div>
+</section>
 <?php endif; ?>
 
 <?php include 'includes/footer.php'; ?>
 ```
 
-The `header()` redirect must run before any output. Since the markup above only renders inside `if ($alreadySubmitted)`, the `else` branch's `header()` call fires before any byte is sent.
+(Validation errors get their own state — a card with the error list + back link to `/#apply`. Field values aren't re-populated; if that UX is required, that's a follow-up since it needs `$_SESSION`-based form-state passing.)
 
-- [ ] **Step 3: Verify**
+- [ ] **Step 4: Verify GET redirect**
 
 ```bash
-# GET without session flag → 302 to /#apply
 curl -s -o /dev/null -w "%{http_code} %{redirect_url}\n" http://localhost/greencash/apply.php
 ```
 
-Expected: `302 http://localhost/greencash/#apply`.
+Expected: `302 http://localhost/greencash/#apply`. **If you see `200` instead, the header() call is firing after output — your redirect block is in the wrong place. Move it up.**
 
-- [ ] **Step 4: Test the duplicate-guard state by hand**
+- [ ] **Step 5: Verify no "headers already sent" warnings**
+
+```bash
+tail -20 C:/xampp/apache/logs/error.log
+```
+
+After making one curl request to `apply.php`, no `headers already sent` line should appear.
+
+- [ ] **Step 6: Manual duplicate-guard test**
 
 In a logged-out browser, submit the form on index.php with valid data (test ID like `9001011234084` is fine for shape — backend regex only). Should redirect to `application-submitted.php`. Submit again with same ID within 5 minutes — should land on `apply.php` showing the "We already received" page.
 
 If MySQL is off, skip this — note in task comments.
 
-- [ ] **Step 5: Commit**
+- [ ] **Step 7: Commit**
 
 ```bash
 git add apply.php
-git commit -m "refactor: apply.php — strip UI (moved to index.php), keep POST handler, GET redirects"
+git commit -m "refactor: apply.php — strip UI (moved to index.php), GET redirects to /#apply, POST handler preserved"
 ```
 
 ---
@@ -1085,14 +1117,47 @@ git commit -m "style: restyle login.php with form-shell + new design tokens"
 **Files:**
 - Modify: `forgot-password.php`
 
-- [ ] **Step 1: Same pattern as login — replace body with a `.form-shell` and a single email field.**
+- [ ] **Step 1: Confirm existing field/button names**
 
-The exact field names/POST submit-button name must match the existing handler. Grep first.
+```bash
+grep -nE 'name=|isset.*POST' C:/xampp/htdocs/greencash/forgot-password.php
+```
 
-- [ ] **Step 2: Verify + commit**
+Note the existing input `name` and submit button `name`. Use them in Step 2 below. The template assumes `name="email"` for the input and `name="forgot_submit"` for the button — substitute the real names.
+
+- [ ] **Step 2: Replace body markup**
+
+Between `include 'includes/header.php';` and `include 'includes/footer.php';`, replace with:
+
+```php
+<section class="block" style="background:var(--paper);min-height:calc(100vh - 280px)">
+    <div class="wrap" style="max-width:480px">
+        <div class="sec-head">
+            <h2>Forgot your password?</h2>
+            <p>Enter the email on your account and we'll send a reset link.</p>
+        </div>
+        <div class="form-shell">
+            <form class="form-body" method="post" action="<?= htmlspecialchars(APP_URL, ENT_QUOTES, 'UTF-8') ?>/forgot-password.php" novalidate>
+                <?= csrfField() ?>
+                <div class="field">
+                    <label>Email address <span class="req">*</span></label>
+                    <input type="email" name="email" required value="<?= isset($_POST['email']) ? htmlspecialchars($_POST['email'], ENT_QUOTES, 'UTF-8') : '' ?>">
+                </div>
+                <button type="submit" name="forgot_submit" class="btn btn-primary btn-block">Send reset link</button>
+            </form>
+        </div>
+        <p style="text-align:center;margin-top:18px">
+            <a href="<?= htmlspecialchars(APP_URL, ENT_QUOTES, 'UTF-8') ?>/login.php" style="color:var(--green-deep)">← Back to sign in</a>
+        </p>
+    </div>
+</section>
+```
+
+- [ ] **Step 3: Verify + commit**
 
 ```bash
 curl -s -o /dev/null -w "%{http_code}\n" http://localhost/greencash/forgot-password.php
+curl -s http://localhost/greencash/forgot-password.php | grep -c 'class="form-shell"'
 git add forgot-password.php
 git commit -m "style: restyle forgot-password.php with form-shell"
 ```
@@ -1102,29 +1167,104 @@ git commit -m "style: restyle forgot-password.php with form-shell"
 **Files:**
 - Modify: `verify-otp.php`
 
-- [ ] **Step 1: Replace body. OTP page typically has a single 6-digit code input + resend link. Use `.form-shell` with one centered field; preserve the existing form action + input name + any session/token state.**
+- [ ] **Step 1: Confirm existing field/button names + session state**
 
-- [ ] **Step 2: Verify + commit**
+```bash
+grep -nE 'name=|isset.*POST|_SESSION' C:/xampp/htdocs/greencash/verify-otp.php
+```
+
+OTP pages typically read a session-stored email/phone and accept a 6-digit code input + resend link. Note the input `name` (e.g. `otp`/`code`), the submit button `name`, and any hidden token field. Use the real names below.
+
+- [ ] **Step 2: Replace body markup**
+
+```php
+<section class="block" style="background:var(--paper);min-height:calc(100vh - 280px)">
+    <div class="wrap" style="max-width:480px">
+        <div class="sec-head">
+            <h2>Verify your code</h2>
+            <p>We sent a 6-digit code to <b><?= htmlspecialchars($_SESSION['otp_target'] ?? 'your account', ENT_QUOTES, 'UTF-8') ?></b>. Enter it below.</p>
+        </div>
+        <div class="form-shell">
+            <form class="form-body" method="post" action="<?= htmlspecialchars(APP_URL, ENT_QUOTES, 'UTF-8') ?>/verify-otp.php" novalidate>
+                <?= csrfField() ?>
+                <div class="field">
+                    <label>6-digit code <span class="req">*</span></label>
+                    <input name="otp" inputmode="numeric" maxlength="6" pattern="\d{6}" required style="text-align:center;letter-spacing:.5em;font-size:22px;font-family:'Sora',sans-serif">
+                </div>
+                <button type="submit" name="verify_submit" class="btn btn-primary btn-block">Verify code</button>
+            </form>
+        </div>
+        <p style="text-align:center;margin-top:18px">
+            <a href="<?= htmlspecialchars(APP_URL, ENT_QUOTES, 'UTF-8') ?>/verify-otp.php?resend=1" style="color:var(--green-deep)">Resend code</a>
+        </p>
+    </div>
+</section>
+```
+
+If the existing page uses different input names (`code` vs `otp`, `resend` flag handling), adjust to match the existing handler. The `$_SESSION['otp_target']` key is a guess; replace with whatever the existing OTP handler uses to stash the target email/phone (grep `OTP|otp_` to find it).
+
+- [ ] **Step 3: Verify + commit**
 
 ```bash
 curl -s -o /dev/null -w "%{http_code}\n" http://localhost/greencash/verify-otp.php
 git add verify-otp.php
-git commit -m "style: restyle verify-otp.php with form-shell"
+git commit -m "style: restyle verify-otp.php with form-shell + centered code input"
 ```
+
+(A 200/302 are both acceptable; the page may redirect if no OTP-target session is set.)
 
 ### Task 5.4: Restyle `reset-password.php`
 
 **Files:**
 - Modify: `reset-password.php`
 
-- [ ] **Step 1: Same pattern. Two password fields (new + confirm). Preserve existing reset-token hidden field and POST target.**
+- [ ] **Step 1: Confirm existing field/button names + token handling**
 
-- [ ] **Step 2: Verify + commit**
+```bash
+grep -nE 'name=|isset.*POST|token|_GET' C:/xampp/htdocs/greencash/reset-password.php
+```
+
+Note: reset tokens usually arrive via `?token=` in the URL and are forwarded through a hidden field on the form. Find the existing hidden field's name (commonly `token` or `reset_token`) and preserve it.
+
+- [ ] **Step 2: Replace body markup**
+
+```php
+<section class="block" style="background:var(--paper);min-height:calc(100vh - 280px)">
+    <div class="wrap" style="max-width:480px">
+        <div class="sec-head">
+            <h2>Choose a new password</h2>
+            <p>Make it 8+ characters with at least one number.</p>
+        </div>
+        <div class="form-shell">
+            <form class="form-body" method="post" action="<?= htmlspecialchars(APP_URL, ENT_QUOTES, 'UTF-8') ?>/reset-password.php" novalidate>
+                <?= csrfField() ?>
+                <input type="hidden" name="token" value="<?= htmlspecialchars($_GET['token'] ?? ($_POST['token'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
+                <div class="field">
+                    <label>New password <span class="req">*</span></label>
+                    <input type="password" name="password" minlength="8" required>
+                </div>
+                <div class="field">
+                    <label>Confirm new password <span class="req">*</span></label>
+                    <input type="password" name="password_confirm" minlength="8" required>
+                </div>
+                <button type="submit" name="reset_submit" class="btn btn-primary btn-block">Update password</button>
+            </form>
+        </div>
+        <p style="text-align:center;margin-top:18px">
+            <a href="<?= htmlspecialchars(APP_URL, ENT_QUOTES, 'UTF-8') ?>/login.php" style="color:var(--green-deep)">← Back to sign in</a>
+        </p>
+    </div>
+</section>
+```
+
+If the existing handler uses `password2` instead of `password_confirm` or `reset_token` instead of `token`, adjust to match.
+
+- [ ] **Step 3: Verify + commit**
 
 ```bash
 curl -s -o /dev/null -w "%{http_code}\n" http://localhost/greencash/reset-password.php
 git add reset-password.php
-git commit -m "style: restyle reset-password.php with form-shell"
+git commit -m "style: restyle reset-password.php with form-shell + dual password fields"
 ```
 
 ---

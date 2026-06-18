@@ -140,7 +140,7 @@ document.querySelectorAll('.flash .x').forEach(btn =>
       <a href="<?= APP_URL ?>/track-application.php">Track</a>
     </nav>
     <div class="nav-cta">
-      <a href="<?= APP_URL ?>/login.php" class="btn btn-ghost">Sign in</a>
+      <a href="<?= APP_URL ?>/login.php" class="btn btn-ghost btn-ghost--on-dark">Sign in</a>
       <a href="<?= APP_URL ?>/#apply" class="btn btn-yellow">Apply now</a>
       <button class="burger" id="burger" aria-label="Menu"><span></span><span></span><span></span></button>
     </div>
