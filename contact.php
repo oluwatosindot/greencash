@@ -57,101 +57,68 @@ $page_title = 'Contact Us';
 include 'includes/header.php';
 ?>
 
-<div class="row g-5">
-    <!-- Contact Form -->
-    <div class="col-md-7">
-        <h1 class="section-title mb-1">Contact Us</h1>
-        <p class="text-muted mb-4">Have a question? Fill in the form and we'll get back to you.</p>
+<section class="block" style="background:var(--paper);min-height:calc(100vh - 280px)">
+    <div class="wrap">
+        <div class="sec-head">
+            <h2>Contact us</h2>
+            <p>Questions? We're open 24 hours.</p>
+        </div>
 
         <?php if (!empty($errors)): ?>
-            <div class="alert alert-danger">Please fix the errors below and try again.</div>
+            <div class="flash flash--error" style="max-width:980px;margin:0 auto 22px">Please fix the errors below and try again.</div>
         <?php endif; ?>
 
-        <form method="POST" action="contact.php" novalidate>
-            <?= csrfField() ?>
-
-            <div class="mb-3">
-                <label class="form-label fw-semibold">Full Name <span class="text-danger">*</span></label>
-                <input type="text" name="name" maxlength="100"
-                       class="form-control <?= isset($errors['name']) ? 'is-invalid' : '' ?>"
-                       value="<?= sanitize($old['name'] ?? '') ?>">
-                <?php if (isset($errors['name'])): ?>
-                    <div class="invalid-feedback"><?= sanitize($errors['name']) ?></div>
-                <?php endif; ?>
+        <div class="grid-3" style="grid-template-columns:1fr 2fr;align-items:start">
+            <div class="card">
+                <h3 style="margin-bottom:18px">Reach us</h3>
+                <p><b>Address</b><br>Odyssey Mall, Ballito<br>KwaZulu-Natal</p>
+                <p style="margin-top:14px"><b>Phone</b><br>+27 (0)32 000 0000</p>
+                <p style="margin-top:14px"><b>Email</b><br>hello@greencash.co.za</p>
+                <p style="margin-top:14px"><b>Hours</b><br>24 hours / 7 days</p>
             </div>
 
-            <div class="mb-3">
-                <label class="form-label fw-semibold">Email Address <span class="text-danger">*</span></label>
-                <input type="email" name="email" maxlength="255"
-                       class="form-control <?= isset($errors['email']) ? 'is-invalid' : '' ?>"
-                       value="<?= sanitize($old['email'] ?? '') ?>">
-                <?php if (isset($errors['email'])): ?>
-                    <div class="invalid-feedback"><?= sanitize($errors['email']) ?></div>
-                <?php endif; ?>
+            <div class="form-shell">
+                <form class="form-body" method="post" action="<?= htmlspecialchars(APP_URL, ENT_QUOTES, 'UTF-8') ?>/contact.php" novalidate>
+                    <?= csrfField() ?>
+                    <h3 style="margin-bottom:6px">Send us a message</h3>
+                    <p class="desc">We typically reply within one business day.</p>
+                    <div class="fgrid">
+                        <div class="field <?= isset($errors['name']) ? 'invalid' : '' ?>">
+                            <label>Your name <span class="req">*</span></label>
+                            <input name="name" maxlength="100" required value="<?= sanitize($old['name'] ?? '') ?>">
+                            <?php if (isset($errors['name'])): ?><div class="err"><?= sanitize($errors['name']) ?></div><?php endif; ?>
+                        </div>
+                        <div class="field <?= isset($errors['email']) ? 'invalid' : '' ?>">
+                            <label>Email <span class="req">*</span></label>
+                            <input type="email" name="email" maxlength="255" required value="<?= sanitize($old['email'] ?? '') ?>">
+                            <?php if (isset($errors['email'])): ?><div class="err"><?= sanitize($errors['email']) ?></div><?php endif; ?>
+                        </div>
+                        <div class="field <?= isset($errors['phone']) ? 'invalid' : '' ?>">
+                            <label>Phone <span class="hint" style="font-weight:normal">(optional)</span></label>
+                            <input type="tel" name="phone" maxlength="20" value="<?= sanitize($old['phone'] ?? '') ?>">
+                            <?php if (isset($errors['phone'])): ?><div class="err"><?= sanitize($errors['phone']) ?></div><?php endif; ?>
+                        </div>
+                        <div class="field <?= isset($errors['subject']) ? 'invalid' : '' ?>">
+                            <label>Subject <span class="req">*</span></label>
+                            <input name="subject" maxlength="255" required value="<?= sanitize($old['subject'] ?? '') ?>">
+                            <?php if (isset($errors['subject'])): ?><div class="err"><?= sanitize($errors['subject']) ?></div><?php endif; ?>
+                        </div>
+                        <div class="field full <?= isset($errors['message']) ? 'invalid' : '' ?>">
+                            <label>Message <span class="req">*</span></label>
+                            <textarea name="message" rows="5" maxlength="5000" required><?= sanitize($old['message'] ?? '') ?></textarea>
+                            <?php if (isset($errors['message'])): ?><div class="err"><?= sanitize($errors['message']) ?></div><?php endif; ?>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Send message</button>
+                </form>
             </div>
+        </div>
 
-            <div class="mb-3">
-                <label class="form-label fw-semibold">Phone <span class="text-muted fw-normal">(optional)</span></label>
-                <input type="tel" name="phone" maxlength="20"
-                       class="form-control <?= isset($errors['phone']) ? 'is-invalid' : '' ?>"
-                       value="<?= sanitize($old['phone'] ?? '') ?>">
-                <?php if (isset($errors['phone'])): ?>
-                    <div class="invalid-feedback"><?= sanitize($errors['phone']) ?></div>
-                <?php endif; ?>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label fw-semibold">Subject <span class="text-danger">*</span></label>
-                <input type="text" name="subject" maxlength="255"
-                       class="form-control <?= isset($errors['subject']) ? 'is-invalid' : '' ?>"
-                       value="<?= sanitize($old['subject'] ?? '') ?>">
-                <?php if (isset($errors['subject'])): ?>
-                    <div class="invalid-feedback"><?= sanitize($errors['subject']) ?></div>
-                <?php endif; ?>
-            </div>
-
-            <div class="mb-4">
-                <label class="form-label fw-semibold">Message <span class="text-danger">*</span></label>
-                <textarea name="message" rows="5" maxlength="5000"
-                          class="form-control <?= isset($errors['message']) ? 'is-invalid' : '' ?>"><?= sanitize($old['message'] ?? '') ?></textarea>
-                <?php if (isset($errors['message'])): ?>
-                    <div class="invalid-feedback"><?= sanitize($errors['message']) ?></div>
-                <?php endif; ?>
-            </div>
-
-            <button type="submit" class="btn btn-gc px-4 py-2">
-                <i class="bi bi-send me-2"></i>Send Message
-            </button>
-        </form>
+        <div style="margin-top:60px;max-width:780px">
+            <h2 id="complaints">Complaints procedure</h2>
+            <p style="color:var(--muted);margin-top:10px">If you have a complaint about our service or a loan decision, please email <b>complaints@greencash.co.za</b> with your reference number and a description. We acknowledge within 48 hours and aim to resolve within 14 business days. If you're not satisfied with our response, you can escalate to the National Credit Regulator (NCR) at <a href="https://www.ncr.org.za" style="color:var(--green-deep)">ncr.org.za</a>.</p>
+        </div>
     </div>
-
-    <!-- Contact Details -->
-    <div class="col-md-4 offset-md-1">
-        <h5 class="fw-semibold mb-3">Get In Touch</h5>
-        <ul class="list-unstyled">
-            <li class="mb-3 d-flex gap-3">
-                <i class="bi bi-telephone-fill text-success mt-1"></i>
-                <div>
-                    <div class="fw-semibold">Phone</div>
-                    <div class="text-muted">+27 (0) 10 000 0000</div>
-                </div>
-            </li>
-            <li class="mb-3 d-flex gap-3">
-                <i class="bi bi-envelope-fill text-success mt-1"></i>
-                <div>
-                    <div class="fw-semibold">Email</div>
-                    <div class="text-muted">admin@greencash.co.za</div>
-                </div>
-            </li>
-            <li class="d-flex gap-3">
-                <i class="bi bi-clock-fill text-success mt-1"></i>
-                <div>
-                    <div class="fw-semibold">Business Hours</div>
-                    <div class="text-muted">Mon–Fri, 8am–5pm</div>
-                </div>
-            </li>
-        </ul>
-    </div>
-</div>
+</section>
 
 <?php include 'includes/footer.php'; ?>
