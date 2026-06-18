@@ -72,6 +72,42 @@ No new files are created. No DB schema changes. No backend logic changes.
 
 **Component classes (port verbatim from artifact):** `.wrap`, `.btn`, `.btn-primary`, `.btn-yellow`, `.btn-ghost`, `.btn-block`, `header`, `.nav`, `.brand`, `.navlinks`, `.nav-cta`, `.burger`, `.hero`, `.eyebrow`, `.trust-row`, `.calc-card`, `.slider-group`, `.calc-out`, `.calc-row`, `.strip`, `.block`, `.sec-head`, `.kicker`, `.grid-3`, `.card`, `.steps`, `.step`, `.band`, `.faq`, `.q`, `.apply`, `.form-shell`, `.steps-bar`, `.form-body`, `.fstep`, `.fgrid`, `.field`, `.check`, `.form-nav`, `.upload`, `.success`, `.ref-no`, `footer`, `.foot-grid`, `.foot-brand`, `.foot-col`, `.foot-contact`, `.foot-bottom`.
 
+**Two new component classes** (not in artifact, needed to replace dropped Bootstrap pieces):
+
+```css
+/* Ghost button on a dark background (e.g. hero secondary CTA) */
+.btn-ghost--on-dark{color:#fff;border-color:rgba(255,255,255,.35)}
+.btn-ghost--on-dark:hover{color:var(--yellow);border-color:var(--yellow)}
+
+/* Flash messages (replaces Bootstrap .alert .alert-dismissible) */
+.flash{
+  position:relative;
+  display:flex;align-items:flex-start;gap:12px;
+  background:var(--paper-2);border:1px solid var(--line);border-left:4px solid var(--green);
+  border-radius:12px;padding:14px 44px 14px 18px;margin-bottom:14px;
+  font-size:14.5px;color:var(--ink);
+  box-shadow:var(--shadow-sm);
+}
+.flash--success{border-left-color:var(--green)}
+.flash--error{border-left-color:#d33}
+.flash--warning{border-left-color:var(--yellow)}
+.flash--info{border-left-color:var(--green-deep)}
+.flash .x{
+  position:absolute;top:10px;right:10px;
+  width:26px;height:26px;border:none;background:transparent;
+  border-radius:50%;cursor:pointer;font-size:18px;color:var(--muted);
+}
+.flash .x:hover{background:var(--paper);color:var(--ink)}
+```
+
+Vanilla-JS dismisser lives in `main.js`:
+
+```js
+document.querySelectorAll('.flash .x').forEach(btn =>
+  btn.addEventListener('click', () => btn.closest('.flash').remove())
+);
+```
+
 ---
 
 ## Section 2 — Shared shells
@@ -94,7 +130,7 @@ No new files are created. No DB schema changes. No backend logic changes.
 <header>
   <div class="wrap nav">
     <a href="<?= APP_URL ?>" class="brand">
-      <img src="<?= APP_URL ?>/assets/img/logo01.jpeg" alt="GreenCash" style="height:52px">
+      <img src="<?= APP_URL ?>/assets/img/logo01.jpeg" alt="GreenCash" style="height:42px">
     </a>
     <nav class="navlinks" id="navlinks">
       <a href="<?= APP_URL ?>/#how">How it works</a>
@@ -110,7 +146,16 @@ No new files are created. No DB schema changes. No backend logic changes.
     </div>
   </div>
 </header>
-<?php /* flash block — restyled but same data flow */ ?>
+<?php $flash = getFlash(); if ($flash):
+    $type = in_array($flash['type'], ['success','error','warning','info'], true) ? $flash['type'] : 'info';
+?>
+<div class="wrap" style="padding-top:18px">
+  <div class="flash flash--<?= $type ?>">
+    <span><?= sanitize($flash['message']) ?></span>
+    <button class="x" type="button" aria-label="Dismiss">×</button>
+  </div>
+</div>
+<?php endif; ?>
 <main>
 ```
 
@@ -141,6 +186,8 @@ No new files are created. No DB schema changes. No backend logic changes.
         <h4>Legal</h4>
         <a href="<?= APP_URL ?>/terms-and-conditions.php">Terms &amp; Conditions</a>
         <a href="<?= APP_URL ?>/privacy-policy.php">Privacy Policy (POPIA)</a>
+        <a href="<?= APP_URL ?>/terms-and-conditions.php#pre-agreement">Pre-agreement disclosure</a>
+        <a href="<?= APP_URL ?>/contact.php#complaints">Complaints procedure</a>
       </div>
       <div class="foot-col foot-contact">
         <h4>Contact</h4>
@@ -170,7 +217,7 @@ No new files are created. No DB schema changes. No backend logic changes.
 
 Single PHP file. Sections in this order, copied verbatim from artifact:
 
-1. **Hero** (`<section class="hero" id="home">`) — eyebrow pill, headline with `.hl` yellow span, lead paragraph, two CTAs (`.btn-primary` "Apply for cash" → `#apply`, `.btn-ghost` "See how it works" → `#how`), trust-row with three `<b>` stats. **Calculator card** on the right (`.calc-card`).
+1. **Hero** (`<section class="hero" id="home">`) — eyebrow pill, headline with `.hl` yellow span, lead paragraph, two CTAs (`.btn-primary` "Apply for cash" → `#apply`, `.btn-ghost btn-ghost--on-dark` "See how it works" → `#how`), trust-row with three `<b>` stats. **Calculator card** on the right (`.calc-card`). The `--on-dark` modifier replaces the artifact's inline `style="color:#fff;border-color:rgba(255,255,255,.35)"` so the pattern is reusable on any other dark section.
 2. **Strip** (`<div class="strip">`) — four pills (location, POPIA, decisions, employer-partner).
 3. **How it works** (`<section class="block" id="how">`) — sec-head + 4 `.step` cards with numbered circles.
 4. **Products** (`<section class="block" id="products">`) — 3 cards (Payday Loan, Earned Wage Access [with `.tag` "Popular"], Repeat Customer).
@@ -205,29 +252,142 @@ function calc() {
 
 ### Apply form wiring
 
-The applicant form's 4 steps **mirror the existing apply.php field set** but use the artifact's `.form-shell` / `.steps-bar` / `.fstep` markup:
+**Direction chosen:** **Shrink the artifact form to match the existing backend.** The backend (apply.php) is the source of truth; bank-detail collection is intentionally post-approval, not at application time. The artifact's banking/dob/pay-frequency/gross-net/purpose fields are removed. Nothing in apply.php's POST handler changes.
 
-| Step | Fields (existing names preserved) |
-|------|-----------------------------------|
-| 1 Personal | `first_name`, `last_name`, `id_number`, `email`, `phone`, `address`, `city`, `province`, `zip_code` |
-| 2 Employment | `employment_status`, `employer_name`, `employer_contact`, `job_title`, `employment_duration` |
-| 3 Loan & bank | `salary_amount`, `next_payday_date`, `loan_amount` (slider), bank fields |
-| 4 Documents | `id_document`, `payslip`, `bank_statement` + consent checkboxes |
+The form's 4 steps map **exactly** to apply.php's field names, types, and whitelists (verified by reading apply.php lines 33–82):
 
-**Server submission:**
-- `<form action="apply.php" method="post" enctype="multipart/form-data">` — same target as before
-- CSRF hidden field preserved
-- On submit, `apply.php` runs its existing handler (duplicate guard, validation, file upload, DB insert, email stub, redirect to `/application-submitted.php?ref=…`)
-- The artifact's `submitApplication()` stub is **deleted** — real form posts to the server, no client-side simulated success.
+**Step 1 — Personal**
 
-**Employer enquiry form:** New endpoint not yet built. For this PR, the partner form's submit handler **logs to `error_log` only** with a TODO marker. Building the real endpoint is out of scope; flagged for follow-up.
+| Field | Input | Required | Notes |
+|-------|-------|----------|-------|
+| `first_name` | text | ✓ | |
+| `last_name` | text | ✓ | (was `surname` in artifact) |
+| `other_names` | text | — | (new field, not in artifact) |
+| `id_number` | text, `inputmode="numeric"`, `maxlength="13"` | ✓ | regex `^\d{13}$` |
+| `email` | email | ✓ | |
+| `phone` | text, `inputmode="tel"` | ✓ | (was `mobile` in artifact) |
+| `address` | text | ✓ | |
+| `city` | text | ✓ | |
+| `province` | **select** | ✓ | Options below |
+| `zip_code` | text, `inputmode="numeric"` | — | Optional — apply.php has no server-side requirement; matches current behavior. (was `postal` in artifact) |
 
-### Field/copy adjustments from artifact to match backend
+**Drop from artifact:** `dob` (backend derives from `id_number`).
 
-- Artifact uses field names like `firstName`, `surname`, `idNumber`. **Renamed** to `first_name`, `last_name`, `id_number` to match `apply.php`'s POST handler.
-- Artifact has `dob`, `mobile`, `postal` — mapped to `phone` and `zip_code`. `dob` is not in the existing schema and is **dropped** (the existing site derives DOB from SA ID number).
-- Artifact's "Reason for loan" / "Other monthly debt" are optional in the existing schema — preserved.
-- All `R500–R8 000` copy in the artifact's hero, calculator caption, and FAQ is **rewritten to R1,000–R10,000** to match the live product.
+**Province options (value = label, exact strings from `$validProvinces`):**
+
+```html
+<option value="">Select…</option>
+<option value="Gauteng">Gauteng</option>
+<option value="Western Cape">Western Cape</option>
+<option value="KwaZulu-Natal">KwaZulu-Natal</option>
+<option value="Eastern Cape">Eastern Cape</option>
+<option value="Limpopo">Limpopo</option>
+<option value="Mpumalanga">Mpumalanga</option>
+<option value="North West">North West</option>
+<option value="Free State">Free State</option>
+<option value="Northern Cape">Northern Cape</option>
+```
+
+**Step 2 — Employment**
+
+| Field | Input | Required | Options / notes |
+|-------|-------|----------|-----------------|
+| `employment_status` | select | ✓ | `employed` → "Permanent / full-time", `contract` → "Contract", `self_employed` → "Self-employed" |
+| `employer_name` | text | ✓ | |
+| `employer_contact` | text, `inputmode="tel"` | ✓ | (new vs. artifact) |
+| `job_title` | text | ✓ | |
+| `employment_duration` | select | ✓ | See options below |
+
+**`employment_duration` options (value → display label):**
+
+```html
+<option value="">Select…</option>
+<option value="less_3m">Less than 3 months</option>
+<option value="3_6m">3 – 6 months</option>
+<option value="6_12m">6 – 12 months</option>
+<option value="1_2y">1 – 2 years</option>
+<option value="2_5y">2 – 5 years</option>
+<option value="5y_plus">5+ years</option>
+```
+
+**Drop from artifact:** `empType` (collapsed into `employment_status`), `payFreq`, `nextPay` moves to Step 3 as `next_payday_date`, `grossPay`, `netPay`.
+
+**Step 3 — Financial**
+
+| Field | Input | Required | Notes |
+|-------|-------|----------|-------|
+| `salary_amount` | text, `inputmode="numeric"` | ✓ | Net monthly take-home (single field, backend asks for `salary_amount > 0`) |
+| `next_payday_date` | date | ✓ | |
+| `loan_amount` | **range slider** | ✓ | `MIN_LOAN_AMOUNT`–`MAX_LOAN_AMOUNT` (R1,000–R10,000), step R500 |
+| `rent` | text, `inputmode="numeric"` | — | Default 0 |
+| `food` | text, `inputmode="numeric"` | — | Default 0 |
+| `transport` | text, `inputmode="numeric"` | — | Default 0 |
+| `other_expenses` | text, `inputmode="numeric"` | — | Default 0 |
+
+**Critical:** The four expense fields **must be split** as shown — apply.php reads each individually with `(float)$_POST['rent']` etc. A single `expenses` field would write 0 to all four columns.
+
+**Drop from artifact:** `purpose`, `bank`, `accType`, `accNumber`, `accHolder` (banking captured post-approval).
+
+**Step 4 — Documents & consent**
+
+| Field | Input | Required | Notes |
+|-------|-------|----------|-------|
+| `id_document` | file | ✓ | jpg/jpeg/png/pdf |
+| `payslip` | file | ✓ | jpg/jpeg/png/pdf |
+| `bank_statement` | file | ✓ | jpg/jpeg/png/pdf |
+| Consent checkboxes | checkbox × 4 | ✓ (client-side only) | NCA, POPIA, Terms, Marketing (optional). **Presentational only** — apply.php's POST handler does not validate consent server-side. Required attribute is enforced by JS step-validation, not the backend. If product/legal needs server-side consent gating, that's a separate ticket. |
+
+**Submit button:**
+
+```html
+<button type="submit" name="submit_application" class="btn btn-primary">
+  Submit application ✓
+</button>
+```
+
+The `name="submit_application"` is **load-bearing** — apply.php gates POST handling on `isset($_POST['submit_application'])` (line 15). Missing it = silent no-op.
+
+**Form element:**
+
+```html
+<form action="<?= APP_URL ?>/apply.php" method="post" enctype="multipart/form-data" id="loanForm" novalidate>
+  <?= csrfField() ?>
+  <!-- 4 .fstep divs -->
+</form>
+```
+
+`csrfField()` is confirmed to exist (`includes/config.php:92`); pairs with `verifyCsrf()` (line 103).
+
+**Client-side behavior:**
+- Multi-step navigation, per-step validation, file-list display — identical to artifact JS.
+- The artifact's `submitApplication()` stub is **deleted**. The form posts to apply.php for real handling.
+- On apply.php success, server-side redirects to `/application-submitted.php` with `$_SESSION['app_reference']` and `$_SESSION['app_name']` (existing behavior, unchanged).
+- On apply.php validation errors, server redirects back to `/#apply` with errors flashed (existing flash mechanism — see flash component spec below).
+
+### Employer enquiry form — DEFERRED
+
+**Removed from this PR.** Building a real partnership-enquiry backend (DB table, email pipeline, admin view) is its own scope. For this redesign:
+
+- The **Employers band** stays (artifact section 5) — green gradient, checklist, "Become a partner →" CTA.
+- The CTA links to `mailto:partners@greencash.co.za?subject=Partnership enquiry` for now (configurable via `PARTNERSHIP_EMAIL` constant in `includes/config.php` — added in this PR as a one-line addition; safe to change later without a re-deploy of the spec).
+- The artifact's `#tabEmployer` toggle, `#employerShell` form, and `partnerForm` JS handler are **omitted** from index.php.
+- The "I'm an employee / I'm an employer" tab UI above the form is **removed** — the apply section just shows the applicant form directly.
+
+**Follow-up ticket:** real partner-enquiry endpoint + admin view. Not in this PR.
+
+### apply.php — GET behavior
+
+The existing `apply.php` GET handler serves the "already submitted" notice when `$_SESSION['form_submitted']` is set (lines 8–13). The spec must preserve this UX state.
+
+**apply.php after redesign:**
+
+- **POST:** unchanged — full handler runs (duplicate guard, validation, file upload, DB insert, email stub, redirect to `/application-submitted.php`).
+- **GET with `$_SESSION['form_submitted']` set:** render a minimal "already submitted" page using the new `.success` component (yellow badge — pending state — not green; "We already received an application from you in the last 5 minutes" copy; reference number; CTA back to `/`). Page uses `includes/header.php` + `includes/footer.php` for nav/footer consistency.
+- **GET without session flag:** 302 redirect to `/#apply` (where the inline form lives).
+
+### Calculator copy alignment
+
+- The artifact's `R500–R8 000` copy in hero trust-row, calculator caption, and FAQ ("How much can I borrow?") is **rewritten to `R1,000–R10,000`** to match `MIN_LOAN_AMOUNT`/`MAX_LOAN_AMOUNT`.
 
 ---
 
@@ -351,14 +511,20 @@ Existing `assets/js/main.js` (55 lines, just the calculator) is fully superseded
 
 ## Risks & open items
 
-1. **CSS class collision during rollout.** Old `style.css` defines `.hero`, `.step-card`, `.btn-gc`, `.calculator-widget`, `.trust-badge`, `.section-title`, `.section-subtitle`. These are replaced with the new class names in the same change. Any page not restyled in this PR will render unstyled — mitigated by restyling all customer pages in one PR.
-2. **Bootstrap removed from customer pages but still loaded on admin.** Acceptable — admin scopes its own CSS. The Bootstrap CDN link is removed from `includes/header.php` only.
-3. **Employer partner form has no backend.** Form is in the artifact; submit currently goes nowhere. For this PR, it logs to `error_log` with a TODO. Build real endpoint as a follow-up.
-4. **Logo readability.** `logo01.jpeg` includes a "YOUR SALARY BOOST" tagline that will be small at 52px. Acceptable as decorative; flagged for a possible variant logo without the tagline if needed.
-5. **Compliance placeholders preserved.** NCR registration number and detailed responsible-lending copy are left as bracketed placeholders. Compliance team to fill in before production launch.
-6. **Term slider dropped.** Artifact has a 1–6 month term slider; backend supports 1 month only. Reintroduce when backend grows multi-term capability.
-7. **dob field dropped.** Artifact has a date-of-birth input; existing site derives DOB from SA ID. Dropped to avoid schema divergence.
-8. **No JS framework.** Plain vanilla DOM JS. If complexity grows, a small framework (Alpine, htmx) may help — out of scope for this redesign.
+1. **CSS class collision during rollout.** Old `style.css` defines `.hero`, `.step-card`, `.btn-gc`, `.calculator-widget`, `.trust-badge`, `.section-title`, `.section-subtitle`. These are replaced with the new class names in the same change. Any page not restyled in this PR will render unstyled — mitigated by restyling **all** customer pages in one PR (listed in Files table).
+2. **Bootstrap removed from customer pages but still loaded on admin.** Acceptable — admin uses its own `admin-header.php` which still loads Bootstrap. The Bootstrap CDN link is removed from `includes/header.php` only.
+3. **Employer partner form is DEFERRED.** Removed from this PR entirely. Employers band CTA becomes a `mailto:` link (via new `PARTNERSHIP_EMAIL` constant in `includes/config.php`). Real form + admin view is a follow-up ticket.
+4. **Logo readability.** `logo01.jpeg` contains a "YOUR SALARY BOOST" tagline that will be illegible at the artifact's 42px nav height. Acceptable as a decorative wordmark; a tagline-free variant can replace it later without code changes.
+5. **Compliance placeholders preserved.** NCR registration number and responsible-lending copy are left as bracketed placeholders in `includes/footer.php`. Compliance team to fill in before production launch.
+6. **Term slider dropped.** Artifact has a 1–6 month term slider; backend supports `LOAN_TERM_MONTHS = 1` only. Reintroduce when backend grows multi-term capability.
+7. **`dob` field dropped.** Artifact has a date-of-birth input; existing site derives DOB from SA ID. Dropped to avoid schema divergence.
+8. **Banking-detail fields dropped from form.** Artifact's bank-name/account-type/account-number/account-holder are removed — banking is captured post-approval. If product requires up-front collection, that's a separate spec.
+9. **`other_names` field added vs. artifact.** Backend accepts it; surfacing it in the personal step matches backend completeness.
+10. **Employment status enum collapse.** Artifact's "Part-time" option has no backend value and is dropped. Backend supports `employed/contract/self_employed` only.
+11. **Pre-agreement / Complaints links use `#`-anchors.** Footer links to `terms-and-conditions.php#pre-agreement` and `contact.php#complaints`. Those anchor IDs must exist on those pages — add `<h2 id="pre-agreement">` and `<h2 id="complaints">` sections when restyling those pages.
+12. **"Review" step intentionally dropped.** Current `apply.php` UI has 5 steps (Personal/Employment/Financial/Documents/**Review**). The artifact has 4 — Documents step doubles as the final consent + submit step. Users lose the "review-before-submit" affordance. Acceptable UX trade-off (the artifact's pattern is industry-standard for high-conversion loan forms); flagged here for visibility. If needed, a confirmation modal between "Submit" and the POST is a cheap follow-up.
+13. **Consent checkboxes are client-side only.** apply.php does not validate consent flags on POST. New form's `required` attribute on consent boxes is JS-enforced, not server-enforced. If legal/compliance demands a server gate, that's a follow-up (add `consent_nca`, `consent_popia`, `consent_terms` validation to apply.php's handler).
+14. **No JS framework.** Plain vanilla DOM JS. If complexity grows, a small framework (Alpine, htmx) may help — out of scope for this redesign.
 
 ---
 
@@ -371,3 +537,4 @@ Existing `assets/js/main.js` (55 lines, just the calculator) is fully superseded
 - `/login.php`, `/track-application.php`, `/contact.php`, `/privacy-policy.php`, `/terms-and-conditions.php`, `/404.php` all render with the new shared header/footer and restyled bodies.
 - `/admin/` still loads with Bootstrap, unaffected.
 - Mobile nav burger works; calculator slider works; FAQ accordion works; multi-step form steps + validation + file-list work.
+- Footer's "Pre-agreement disclosure" link scrolls to `<h2 id="pre-agreement">` on terms-and-conditions.php. Footer's "Complaints procedure" link scrolls to `<h2 id="complaints">` on contact.php. Both anchors must be added when those pages are restyled.
