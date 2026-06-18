@@ -41,4 +41,31 @@ include 'includes/header.php';
     </div>
 </section>
 
+<!-- ============ STRIP ============ -->
+<div class="strip">
+    <div class="wrap">
+        <span>📍 <b>Odyssey Mall, Ballito</b></span>
+        <span>🔒 POPIA-aligned data handling</span>
+        <span>⚡ Decisions in minutes</span>
+        <span>🤝 Employer salary-advance partner</span>
+    </div>
+</div>
+
+<!-- ============ HOW IT WORKS ============ -->
+<section class="block" id="how">
+    <div class="wrap">
+        <div class="sec-head">
+            <div class="kicker">Simple &amp; fast</div>
+            <h2>Four steps to your salary boost</h2>
+            <p>From application to payout — designed to be quick, transparent and stress-free.</p>
+        </div>
+        <div class="steps">
+            <div class="step"><div class="num">1</div><h4>Apply online</h4><p>Fill in the secure form below in just a few minutes, any time of day.</p></div>
+            <div class="step"><div class="num">2</div><h4>Upload documents</h4><p>Add your ID, latest payslip and proof of bank account.</p></div>
+            <div class="step"><div class="num">3</div><h4>Get a decision</h4><p>We assess affordability and confirm your offer quickly.</p></div>
+            <div class="step"><div class="num">4</div><h4>Receive your cash</h4><p>Once accepted, funds are paid directly into your bank account.</p></div>
+        </div>
+    </div>
+</section>
+
 <?php include 'includes/footer.php'; ?>
