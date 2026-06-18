@@ -31,7 +31,9 @@
             </div>
         </div>
         <div class="foot-bottom">
-            <div class="legal"><b>Responsible lending:</b> [NCR registration number — insert before launch]. Lending subject to affordability assessment. Representative cost of credit, interest and fees disclosed before acceptance, in compliance with the National Credit Act 34 of 2005. <i>Placeholder copy — confirm with compliance.</i></div>
+            <?php if (defined('NCR_NUMBER') && NCR_NUMBER !== ''): ?>
+            <div class="legal"><b>Responsible lending:</b> GreenCash is a registered credit provider, <?= htmlspecialchars(NCR_NUMBER, ENT_QUOTES, 'UTF-8') ?>. Lending subject to affordability assessment. Representative cost of credit, interest and fees disclosed before acceptance, in compliance with the National Credit Act 34 of 2005.</div>
+            <?php endif; ?>
             <div>© <span id="yr"></span> <?= htmlspecialchars(APP_NAME, ENT_QUOTES, 'UTF-8') ?>. All rights reserved.</div>
         </div>
     </div>

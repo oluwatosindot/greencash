@@ -114,9 +114,15 @@ include 'includes/header.php';
             </div>
         </div>
 
-        <div style="margin-top:60px;max-width:780px">
+        <div class="prose" style="margin-top:80px;max-width:780px">
             <h2 id="complaints">Complaints procedure</h2>
-            <p style="color:var(--muted);margin-top:10px">If you have a complaint about our service or a loan decision, please email <b>complaints@greencash.co.za</b> with your reference number and a description. We acknowledge within 48 hours and aim to resolve within 14 business days. If you're not satisfied with our response, you can escalate to the National Credit Regulator (NCR) at <a href="https://www.ncr.org.za" style="color:var(--green-deep)">ncr.org.za</a>.</p>
+            <p>If you have a complaint about our service or a loan decision, we want to hear about it. Here's how to escalate:</p>
+            <ol>
+                <li>Email <a href="mailto:info@greencash.co.za">info@greencash.co.za</a> with your <strong>reference number</strong> and a clear description of the issue.</li>
+                <li>We will acknowledge your complaint within <strong>48 hours</strong> and aim to resolve it within <strong>14 business days</strong>.</li>
+                <li>If you are not satisfied with our response, you can escalate to the <strong>National Credit Regulator (NCR)</strong> at <a href="https://www.ncr.org.za" target="_blank" rel="noopener">ncr.org.za</a> or the <strong>Credit Ombud</strong> at <a href="https://www.creditombud.org.za" target="_blank" rel="noopener">creditombud.org.za</a>.</li>
+            </ol>
+            <blockquote>We treat every complaint seriously. Your feedback helps us improve, and we'd rather resolve issues directly than have them escalated.</blockquote>
         </div>
     </div>
 </section>

@@ -4,15 +4,18 @@ $page_title = 'Privacy Policy';
 include 'includes/header.php';
 ?>
 
-<section class="block" style="background:var(--paper-2)">
-    <div class="wrap" style="max-width:780px">
-        <div class="sec-head" style="text-align:left;margin-bottom:30px">
-            <div class="kicker">Legal</div>
-            <h2>Privacy Policy (POPIA)</h2>
-        </div>
-        <div class="prose" style="line-height:1.8;color:var(--ink)">
-            <p><em>Last updated: <?= date('F Y') ?></em></p>
+<section class="legal-hero">
+    <div class="wrap">
+        <span class="kicker">● Legal · Privacy</span>
+        <h1>Privacy Policy (POPIA)</h1>
+        <p>How we collect, use, store, and protect your personal information in line with South Africa's Protection of Personal Information Act.</p>
+        <span class="meta">📅 Last updated <?= date('F Y') ?></span>
+    </div>
+</section>
 
+<section class="block" style="background:var(--paper-2);padding-top:0">
+    <div class="wrap" style="max-width:780px">
+        <div class="prose">
             <h3>1. Information We Collect</h3>
             <p>We collect personal information including your full name, South African ID number, email address, phone number, physical address, employment details, salary information, and financial documents (payslips, bank statements) when you apply for a salary advance loan.</p>
 

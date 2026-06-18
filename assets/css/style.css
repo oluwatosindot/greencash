@@ -285,7 +285,62 @@ footer{background:#000;color:#9fb0a3;padding:64px 0 30px}
   .band{padding:30px 24px}
 }
 
-/* ---------- WHATSAPP FLOAT ---------- */
+/* ---------- LEGAL / PROSE PAGES ---------- */
+.legal-hero{
+  position:relative;overflow:hidden;
+  background:radial-gradient(700px 360px at 88% 0%,rgba(244,192,32,.14),transparent 60%),
+             linear-gradient(160deg,#0c1410 0%,#0a3a16 100%);
+  color:#fff;padding:74px 0 60px;margin-bottom:50px;
+}
+.legal-hero .wrap{position:relative;z-index:2;max-width:780px}
+.legal-hero .kicker{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(244,192,32,.15);border:1px solid rgba(244,192,32,.4);
+  color:var(--yellow);font-weight:600;font-size:12px;letter-spacing:.08em;
+  padding:6px 14px;border-radius:999px;text-transform:uppercase;margin-bottom:18px;
+}
+.legal-hero h1{font-family:'Sora',sans-serif;font-size:clamp(32px,4vw,46px);font-weight:800;letter-spacing:-.02em;line-height:1.1;margin-bottom:14px}
+.legal-hero p{color:#cfe0d3;font-size:17px;max-width:580px;line-height:1.6}
+.legal-hero .meta{
+  display:inline-flex;align-items:center;gap:8px;margin-top:22px;
+  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);
+  color:#cfe0d3;font-size:13px;font-weight:500;padding:7px 14px;border-radius:999px;
+}
+
+.prose{font-size:16px;line-height:1.8;color:var(--ink)}
+.prose > * + *{margin-top:1.1em}
+.prose h2{
+  font-family:'Sora',sans-serif;font-size:24px;font-weight:700;letter-spacing:-.01em;
+  color:var(--green-deep);margin-top:2.2em;
+  padding-bottom:12px;border-bottom:2px solid var(--line);
+  position:relative;
+}
+.prose h2:first-child{margin-top:0}
+.prose h2::after{
+  content:"";position:absolute;left:0;bottom:-2px;width:72px;height:2px;background:var(--green);
+}
+.prose h3{
+  font-family:'Sora',sans-serif;font-size:18px;font-weight:600;
+  color:var(--ink);margin-top:1.8em;
+  padding-left:14px;border-left:3px solid var(--green);
+}
+.prose h4{font-family:'Sora',sans-serif;font-size:16px;font-weight:600;color:var(--green-deep);margin-top:1.4em}
+.prose p{margin:0}
+.prose ul, .prose ol{padding-left:1.4em}
+.prose li{margin-top:.55em}
+.prose li::marker{color:var(--green-deep);font-weight:700}
+.prose strong{color:var(--ink);font-weight:700}
+.prose em{color:var(--muted)}
+.prose a{color:var(--green-deep);text-decoration:underline;text-decoration-color:rgba(15,122,38,.3);text-underline-offset:3px;transition:color .15s, text-decoration-color .15s}
+.prose a:hover{color:var(--green);text-decoration-color:var(--yellow)}
+.prose blockquote{
+  background:var(--paper);border-left:4px solid var(--yellow);
+  padding:18px 22px;border-radius:0 12px 12px 0;color:var(--ink);
+  margin:1.4em 0;
+}
+.prose hr{border:none;height:1px;background:var(--line);margin:2em 0}
+
+/* WHATSAPP FLOAT */
 .wa-float{
   position:fixed;bottom:24px;right:24px;z-index:80;
   width:60px;height:60px;border-radius:50%;
