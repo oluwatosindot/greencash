@@ -38,12 +38,4 @@ ErrorDocument 500 /500.php
     Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net; img-src 'self' data: https:; connect-src 'self';"
 </IfModule>
 
-# Protect uploads directory — no PHP execution
-<Directory "uploads">
-    php_flag engine off
-    Options -ExecCGI
-    AddHandler cgi-script .php .php3 .php4 .php5 .phtml .pl .py .jsp .asp .htm .shtml .sh .cgi
-    <FilesMatch "\.(php|php3|php4|php5|phtml|pl|py|jsp|asp|htm|shtml|sh|cgi)$">
-        Require all denied
-    </FilesMatch>
-</Directory>
+# Protect uploads directory — no PHP execution (see uploads/.htaccess)

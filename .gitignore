@@ -27,3 +27,6 @@ Thumbs.db
 # Environment
 .env
 *.env
+
+# Local scratch (temp scrapes, etc.)
+.firecrawl/
