@@ -31,6 +31,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $errors['password'] = 'New password is required.';
         } elseif (strlen($password) < 8) {
             $errors['password'] = 'Password must be at least 8 characters.';
+        } elseif (strlen($password) > 72) {
+            // bcrypt silently truncates at 72 bytes — reject longer so users don't
+            // get a false sense of security from an unused suffix.
+            $errors['password'] = 'Password must be 72 characters or fewer.';
+        } elseif (!preg_match('/\d/', $password)) {
+            $errors['password'] = 'Password must contain at least one digit.';
         } elseif ($password !== $confirm) {
             $errors['password_confirm'] = 'Passwords do not match.';
         }
@@ -41,6 +47,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                  SET password = ?, reset_token = NULL, reset_token_expires = NULL
                  WHERE id = ?"
             )->execute([password_hash($password, PASSWORD_BCRYPT), $user['id']]);
+
+            // Regenerate session ID to prevent pre-auth session fixation.
+            session_regenerate_id(true);
 
             setFlash('success', 'Password updated successfully. Please log in.');
             redirect('login.php');

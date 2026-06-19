@@ -9,6 +9,15 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_POST['partner_submit'])) {
 
 verifyCsrf();
 
+// Per-IP rate limit — anti-spam.
+$ip = getClientIp();
+if (checkRateLimit($pdo, $ip, 'partner_ip', 5, 60)) {
+    setFlash('error', 'Too many enquiries from your network. Please try again in an hour.');
+    header('Location: ' . APP_URL . '/#employers', true, 302);
+    exit;
+}
+incrementRateLimit($pdo, $ip, 'partner_ip', 5, 60);
+
 $data = [
     'company'      => trim($_POST['company']      ?? ''),
     'contact_name' => trim($_POST['contact_name'] ?? ''),

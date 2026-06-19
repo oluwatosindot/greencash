@@ -8,10 +8,21 @@ $notFound   = false;
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     verifyCsrf();
 
-    $ref      = sanitize(trim($_POST['reference_number'] ?? ''));
-    $idNumber = sanitize(trim($_POST['id_number'] ?? ''));
+    // Per-IP rate limit — stops enumeration of reference numbers and ID pairs.
+    $ip = getClientIp();
+    if (checkRateLimit($pdo, $ip, 'track_app_ip', 10, 15)) {
+        setFlash('error', 'Too many lookup attempts. Please try again in 15 minutes.');
+        redirect('/track-application.php');
+    }
+    incrementRateLimit($pdo, $ip, 'track_app_ip', 10, 15);
 
-    if (!empty($ref) && !empty($idNumber)) {
+    $ref      = trim($_POST['reference_number'] ?? '');
+    $idNumber = trim($_POST['id_number'] ?? '');
+
+    // Reject malformed inputs early — SA ID is 13 digits, reference is GC-XXXXXX format.
+    if (!preg_match('/^\d{13}$/', $idNumber)) {
+        $notFound = true;
+    } elseif (!empty($ref) && !empty($idNumber)) {
         $stmt = $pdo->prepare(
             "SELECT * FROM salary_advance_applications WHERE reference_number = ? AND id_number = ? LIMIT 1"
         );

@@ -8,6 +8,14 @@ $errors = [];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     verifyCsrf();
 
+    // Per-IP rate limit — prevents enumeration probing and reset-link spamming.
+    $ip = getClientIp();
+    if (checkRateLimit($pdo, $ip, 'forgot_pw_ip', 5, 15)) {
+        setFlash('error', 'Too many password reset requests. Please try again in 15 minutes.');
+        redirect('/forgot-password.php');
+    }
+    incrementRateLimit($pdo, $ip, 'forgot_pw_ip', 5, 15);
+
     $email = trim($_POST['email'] ?? '');
 
     if (empty($email)) {

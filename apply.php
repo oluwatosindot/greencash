@@ -21,6 +21,16 @@ if (!$alreadySubmitted && $_SERVER['REQUEST_METHOD'] === 'GET') {
 if (!$alreadySubmitted && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_application'])) {
     verifyCsrf();
 
+    // Per-IP rate limit — duplicate-guard alone keys on id_number, so an attacker
+    // could rotate IDs to fill the DB + uploads disk. 5 applications / 60 min per IP
+    // is plenty for legitimate use.
+    $ip = getClientIp();
+    if (checkRateLimit($pdo, $ip, 'apply_ip', 5, 60)) {
+        setFlash('error', 'Too many applications from your network. Please try again later.');
+        redirect('/');
+    }
+    incrementRateLimit($pdo, $ip, 'apply_ip', 5, 60);
+
     // Duplicate submission guard (same ID within 5 minutes)
     $submittedId = trim($_POST['id_number'] ?? '');
     if (!empty($submittedId)) {

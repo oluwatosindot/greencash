@@ -1,7 +1,41 @@
 <?php
-// Start session
+// Start session with hardened cookie params. Must happen before any output and
+// before session_start() — calling these AFTER session_start() is a no-op.
 if (session_status() === PHP_SESSION_NONE) {
+    // secure cookie flag — only honor HTTPS or X-Forwarded-Proto from a trusted proxy
+    $_remoteAddr = $_SERVER['REMOTE_ADDR'] ?? '';
+    $_trustedProxy = in_array($_remoteAddr, ['127.0.0.1', '::1'], true);
+    $_isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+        || ($_trustedProxy && ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https');
+
+    session_set_cookie_params([
+        'lifetime' => 0,           // session cookie, browser-close = invalidate
+        'path'     => '/',
+        'domain'   => '',          // current host only
+        'secure'   => $_isHttps,   // HTTPS-only when serving over HTTPS
+        'httponly' => true,        // JS can't read the cookie (XSS hardening)
+        'samesite' => 'Lax',       // CSRF hardening; Lax allows top-level GET navigation
+    ]);
+    ini_set('session.use_strict_mode',  '1'); // reject uninitialized session IDs
+    ini_set('session.use_only_cookies', '1'); // don't accept session ID from URL
     session_start();
+}
+
+// Authenticated-user idle timeout (30 minutes). Applies once any role is set.
+if (!empty($_SESSION['admin_id']) || !empty($_SESSION['user_id']) || !empty($_SESSION['broker_id'])) {
+    $idleMax = 30 * 60;
+    if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity']) > $idleMax) {
+        $_SESSION = [];
+        if (ini_get('session.use_cookies')) {
+            $p = session_get_cookie_params();
+            setcookie(session_name(), '', time() - 42000, $p['path'], $p['domain'], $p['secure'], $p['httponly']);
+        }
+        session_destroy();
+        session_start();
+        $_SESSION['flash'] = ['type' => 'info', 'message' => 'Your session expired. Please sign in again.'];
+        // Defer the actual redirect to the page that detected it
+    }
+    $_SESSION['last_activity'] = time();
 }
 
 // Derive APP_URL from the request — but ONLY for dev/preview hostnames we explicitly
@@ -239,12 +273,21 @@ function logBrokerAction(PDO $pdo, ?int $brokerId, string $action, string $detai
  * Get client IP (handles Cloudflare + proxy headers)
  */
 function getClientIp(): string {
-    foreach (['HTTP_CF_CONNECTING_IP', 'HTTP_X_FORWARDED_FOR', 'REMOTE_ADDR'] as $key) {
-        if (!empty($_SERVER[$key])) {
-            return trim(explode(',', $_SERVER[$key])[0]);
+    // Only trust proxy headers when the request actually came through a known proxy.
+    // On Afrihost shared hosting (no CDN in front by default), trust nothing but REMOTE_ADDR.
+    // If you put Cloudflare in front later, extend $trustedProxyRanges with the CF IPs.
+    $remote = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+    $trustedProxies = ['127.0.0.1', '::1']; // loopback only (ngrok agent uses this)
+    if (in_array($remote, $trustedProxies, true)) {
+        if (!empty($_SERVER['HTTP_CF_CONNECTING_IP'])) {
+            return trim($_SERVER['HTTP_CF_CONNECTING_IP']);
+        }
+        if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+            // X-Forwarded-For can contain a chain — first entry is the original client
+            return trim(explode(',', $_SERVER['HTTP_X_FORWARDED_FOR'])[0]);
         }
     }
-    return 'unknown';
+    return $remote;
 }
 
 /**

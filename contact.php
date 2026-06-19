@@ -7,6 +7,14 @@ $old = [];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     verifyCsrf();
 
+    // Per-IP rate limit — anti-spam.
+    $ip = getClientIp();
+    if (checkRateLimit($pdo, $ip, 'contact_ip', 5, 60)) {
+        setFlash('error', 'Too many messages from your network. Please try again in an hour.');
+        redirect('/contact.php');
+    }
+    incrementRateLimit($pdo, $ip, 'contact_ip', 5, 60);
+
     // Collect raw trimmed values
     $name    = trim($_POST['name']    ?? '');
     $email   = trim($_POST['email']   ?? '');
