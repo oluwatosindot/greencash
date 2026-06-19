@@ -15,7 +15,11 @@ define('DB_USER', 'youracct_gc_app');                 // The MySQL user you crea
 define('DB_PASS', 'STRONG_PASSWORD_FROM_CPANEL');     // Set when creating the user
 
 // === Application ===
-define('APP_URL', 'https://greencash.co.za');         // No trailing slash. https only after SSL is active.
+// APP_URL may already have been derived from the request by config.php (host-allowlist
+// based). Only define here if config.php didn't — guard prevents PHP warnings.
+if (!defined('APP_URL')) {
+    define('APP_URL', 'https://greencash.co.za');     // No trailing slash. https only after SSL is active.
+}
 define('APP_NAME', 'GreenCash');
 
 // === Mail (SMTP) ===
