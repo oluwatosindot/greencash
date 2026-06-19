@@ -35,3 +35,13 @@ Thumbs.db
 crash.txt
 *.dmp
 *.dump
+
+# Internal product/design docs — kept locally, not for the public repo
+SPEC.md
+FILE_STRUCTURE.md
+IMPLEMENTATION_GUIDE.md
+docs/
+snippets/
+
+# Claude Code session config (per-developer)
+.claude/
