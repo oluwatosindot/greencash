@@ -26,10 +26,17 @@ RewriteRule ^(includes|config|cron|database|vendor|uploads)/ - [F,L]
 ErrorDocument 404 /404.php
 ErrorDocument 500 /500.php
 
-# Block access to sensitive file extensions if accidentally placed in docroot
-<FilesMatch "\.(sql|log|md|json|lock|yml|env|gitignore)$">
+# Block access to sensitive file extensions if accidentally placed in docroot.
+# manifest.json (PWA) is explicitly allowed below.
+<FilesMatch "\.(sql|log|md|lock|yml|env|gitignore|cpanel\.yml)$">
     Require all denied
 </FilesMatch>
+<FilesMatch "\.json$">
+    Require all denied
+</FilesMatch>
+<Files "manifest.json">
+    Require all granted
+</Files>
 
 # Security headers
 <IfModule mod_headers.c>

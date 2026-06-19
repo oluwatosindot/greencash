@@ -1,0 +1,17 @@
+# GreenCash robots policy
+User-agent: *
+Allow: /
+
+# Private / internal areas — never index
+Disallow: /admin/
+Disallow: /uploads/
+Disallow: /cron/
+Disallow: /database/
+Disallow: /includes/
+Disallow: /serve-document.php
+Disallow: /apply.php
+Disallow: /verify-otp.php
+Disallow: /reset-password.php
+Disallow: /partnership-enquiry.php
+
+Sitemap: https://greencash.co.za/sitemap.xml

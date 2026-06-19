@@ -1,8 +1,55 @@
 <?php
 require_once 'includes/config.php';
 $page_title = 'Your Salary Boost';
+$page_description = "GreenCash gives salaried South Africans fast, fair access to a portion of their earned pay. R" . number_format(MIN_LOAN_AMOUNT, 0, '.', ',') . "–R" . number_format(MAX_LOAN_AMOUNT, 0, '.', ',') . " in minutes. Available 24 hours, 100% online.";
 include 'includes/header.php';
 ?>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FinancialService",
+  "name": "<?= htmlspecialchars(APP_NAME, ENT_QUOTES, 'UTF-8') ?>",
+  "alternateName": "GreenCash Salary Advance",
+  "description": "Fast, fair salary-advance loans for salaried South Africans.",
+  "url": "<?= htmlspecialchars(APP_URL, ENT_QUOTES, 'UTF-8') ?>",
+  "logo": "<?= htmlspecialchars(APP_URL, ENT_QUOTES, 'UTF-8') ?>/assets/img/favicon-512.png",
+  "image": "<?= htmlspecialchars(APP_URL, ENT_QUOTES, 'UTF-8') ?>/assets/img/favicon-512.png",
+  "telephone": "+27785177961",
+  "email": "info@greencash.co.za",
+  "address": {
+    "@type": "PostalAddress",
+    "addressCountry": "ZA"
+  },
+  "areaServed": {
+    "@type": "Country",
+    "name": "South Africa"
+  },
+  "openingHoursSpecification": [{
+    "@type": "OpeningHoursSpecification",
+    "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],
+    "opens": "00:00",
+    "closes": "23:59"
+  }],
+  "priceRange": "R<?= number_format(MIN_LOAN_AMOUNT, 0, '.', ',') ?>-R<?= number_format(MAX_LOAN_AMOUNT, 0, '.', ',') ?>",
+  "currenciesAccepted": "ZAR"
+}
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {"@type":"Question","name":"Who can apply for a GreenCash loan?","acceptedAnswer":{"@type":"Answer","text":"You must be a salaried employee, 18 or older, a South African citizen or permanent resident, with a valid SA ID, an active bank account into which your salary is paid, and proof of income."}},
+    {"@type":"Question","name":"How much can I borrow?","acceptedAnswer":{"@type":"Answer","text":"Loans range from R<?= number_format(MIN_LOAN_AMOUNT, 0, '.', ',') ?> to R<?= number_format(MAX_LOAN_AMOUNT, 0, '.', ',') ?> depending on your income and affordability assessment."}},
+    {"@type":"Question","name":"How fast will I get my money?","acceptedAnswer":{"@type":"Answer","text":"Applications are processed quickly, often within minutes during business operations. Once approved and accepted, funds are paid directly to your bank account."}},
+    {"@type":"Question","name":"What documents do I need?","acceptedAnswer":{"@type":"Answer","text":"A copy of your SA ID, your most recent payslip, three months of bank statements, and proof of residential address."}},
+    {"@type":"Question","name":"What does earned wage access mean?","acceptedAnswer":{"@type":"Answer","text":"If your employer partners with GreenCash, you can draw down a portion of the salary you've already worked for during the current pay cycle, rather than waiting until payday."}},
+    {"@type":"Question","name":"Is my information safe?","acceptedAnswer":{"@type":"Answer","text":"Yes. We handle your personal information securely and in line with South Africa's Protection of Personal Information Act (POPIA)."}}
+  ]
+}
+</script>
 
 <!-- ============ HERO ============ -->
 <section class="hero" id="home">
