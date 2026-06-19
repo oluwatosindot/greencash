@@ -337,6 +337,83 @@ body.modal-open{overflow:hidden}
   box-shadow:0 4px 10px -4px rgba(26,166,54,.5);
 }
 
+/* ---------- HOVER POLISH ---------- */
+/* Subtle, consistent interactivity. All gated by prefers-reduced-motion. */
+
+/* Buttons — shimmer sweep on hover (primary + yellow). Clips a soft white
+   diagonal across the button. .btn already has translateY on hover. */
+.btn-primary,.btn-yellow{position:relative;overflow:hidden;isolation:isolate}
+.btn-primary::before,.btn-yellow::before{
+  content:"";position:absolute;inset:0;z-index:-1;
+  background:linear-gradient(110deg,transparent 0%,rgba(255,255,255,.25) 50%,transparent 100%);
+  transform:translateX(-110%);
+  transition:transform .65s cubic-bezier(.4,0,.2,1);
+}
+.btn-primary:hover::before,.btn-yellow:hover::before{transform:translateX(110%)}
+
+/* Numbered step circles — fill green and scale on hover, with green-glow */
+.step{transition:transform .28s ease}
+.step .num{transition:background .25s ease,color .25s ease,border-color .25s ease,box-shadow .25s ease,transform .25s ease}
+.step:hover{transform:translateY(-4px)}
+.step:hover .num{
+  background:linear-gradient(135deg,var(--green),var(--green-deep));
+  color:#fff;border-color:var(--green-deep);
+  transform:scale(1.06);
+  box-shadow:0 12px 28px -10px rgba(26,166,54,.55);
+}
+
+/* Product cards — extend the artifact's translateY hover with a green border
+   tint, animated icon (slight pop + tilt), and "Popular" tag pulse */
+.card{transition:transform .25s ease,box-shadow .25s ease,border-color .25s ease}
+.card:hover{border-color:rgba(26,166,54,.35)}
+.card .ico{transition:transform .35s cubic-bezier(.34,1.56,.64,1)}
+.card:hover .ico{transform:scale(1.08) rotate(-4deg)}
+.card .tag{transition:transform .25s ease,box-shadow .25s ease}
+.card:hover .tag{transform:scale(1.06);box-shadow:0 6px 14px -6px rgba(244,192,32,.5)}
+
+/* Eligibility checklist — slide right and pop the check pill */
+.eligibility li{transition:transform .2s ease}
+.eligibility li .ck{transition:transform .25s cubic-bezier(.34,1.56,.64,1),box-shadow .25s ease}
+.eligibility li:hover{transform:translateX(5px)}
+.eligibility li:hover .ck{transform:scale(1.15);box-shadow:0 6px 14px -4px rgba(26,166,54,.55)}
+
+/* FAQ rows — tint the border and add a soft shadow on hover (closed state) */
+.q{transition:border-color .2s ease,box-shadow .2s ease}
+.q:hover{border-color:rgba(26,166,54,.35);box-shadow:0 6px 18px -10px rgba(10,40,18,.18)}
+
+/* Brand logo in the nav — gentle drop-shadow glow on hover so the click target
+   feels alive without changing layout. */
+.brand img{transition:filter .25s ease}
+.brand:hover img{filter:drop-shadow(0 0 10px rgba(244,192,32,.35))}
+
+/* Footer link columns — slide the link a touch on hover */
+.foot-col a{transition:color .15s ease,transform .2s ease}
+.foot-col a:hover{transform:translateX(4px)}
+
+/* Form-shell sign-in / forgot-password style cards — soft lift on hover so
+   visitors notice the call-to-action card */
+.form-shell{transition:box-shadow .25s ease,transform .25s ease}
+.form-shell:hover{box-shadow:0 24px 60px -22px rgba(10,40,18,.4)}
+
+/* Trust strip pills — light up on hover (subtle) */
+.strip .wrap span{transition:color .2s ease}
+.strip .wrap span:hover{color:#fff}
+
+/* Big a11y switch — kill anything ornamental for reduced-motion users */
+@media (prefers-reduced-motion: reduce){
+  .btn-primary::before,.btn-yellow::before,
+  .step,.step .num,
+  .card,.card .ico,.card .tag,
+  .eligibility li,.eligibility li .ck,
+  .q,.brand img,.foot-col a,.form-shell{
+    transition:none !important;
+  }
+  .btn-primary:hover::before,.btn-yellow:hover::before{transform:translateX(-110%)}
+  .step:hover,.card:hover .ico,.card:hover .tag,
+  .eligibility li:hover,.eligibility li:hover .ck,
+  .foot-col a:hover{transform:none}
+}
+
 /* ---------- LEGAL / PROSE PAGES ---------- */
 .legal-hero{
   position:relative;overflow:hidden;
