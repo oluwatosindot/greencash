@@ -261,4 +261,29 @@ CREATE TABLE IF NOT EXISTS `contact_messages` (
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- ============================================================
+-- PARTNERSHIP ENQUIRIES
+-- Persists "Become a partner" modal submissions BEFORE the email send.
+-- If SMTP fails the row still exists; email_sent_at is populated only on
+-- successful mail() return so unsent enquiries are recoverable.
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `partnership_enquiries` (
+    `id` INT(11) NOT NULL AUTO_INCREMENT,
+    `company` VARCHAR(120) DEFAULT NULL,
+    `contact_name` VARCHAR(120) NOT NULL,
+    `email` VARCHAR(255) NOT NULL,
+    `phone` VARCHAR(20) NOT NULL,
+    `employees` VARCHAR(20) DEFAULT NULL,
+    `message` TEXT DEFAULT NULL,
+    `ip_address` VARCHAR(45) DEFAULT NULL,
+    `user_agent` VARCHAR(255) DEFAULT NULL,
+    `email_sent_at` TIMESTAMP NULL DEFAULT NULL,
+    `email_send_attempts` INT(11) NOT NULL DEFAULT 0,
+    `status` ENUM('new','contacted','closed') NOT NULL DEFAULT 'new',
+    `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    INDEX `idx_status` (`status`),
+    INDEX `idx_created` (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 SET FOREIGN_KEY_CHECKS=1;
