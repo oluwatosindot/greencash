@@ -74,7 +74,7 @@ header{
 }
 .nav{display:flex;align-items:center;justify-content:space-between;height:86px}
 .brand{display:flex;align-items:center;gap:10px}
-.brand img{height:42px;width:auto}
+.brand img{height:70px;width:auto;display:block}
 .brand .logotype{font-family:'Sora',sans-serif;font-weight:800;font-size:21px;color:#fff}
 .brand .logotype .c{color:var(--yellow)}
 .navlinks{display:flex;align-items:center;gap:30px}
@@ -275,9 +275,13 @@ footer{background:#121C14;color:#9fb0a3;padding:64px 0 30px} /* matches logo bac
   .foot-grid{grid-template-columns:1fr 1fr}
 }
 @media(max-width:680px){
-  .navlinks,.nav-cta .btn-ghost{display:none}
+  /* Mobile nav: logo + burger only. Apply / Sign in / nav links all hidden. */
+  .navlinks,.nav-cta .btn-ghost,.nav-cta .btn-yellow{display:none}
   .burger{display:flex}
-  .navlinks.open{display:flex;position:absolute;top:86px;left:0;right:0;flex-direction:column;background:var(--ink);padding:20px 24px;gap:16px;border-bottom:1px solid rgba(255,255,255,.1)}
+  /* Logo a bit larger on mobile to take advantage of the now-empty bar */
+  .brand img{height:76px}
+  .nav{height:92px}
+  .navlinks.open{display:flex;position:absolute;top:92px;left:0;right:0;flex-direction:column;background:var(--ink);padding:20px 24px;gap:16px;border-bottom:1px solid rgba(255,255,255,.1)}
   .grid-3,.steps,.fgrid,.foot-grid{grid-template-columns:1fr}
   .form-body{padding:24px 20px}
   .steps-bar .sb span.lbl{display:none}
