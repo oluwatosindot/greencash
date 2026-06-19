@@ -381,10 +381,10 @@ body.modal-open{overflow:hidden}
 .q{transition:border-color .2s ease,box-shadow .2s ease}
 .q:hover{border-color:rgba(26,166,54,.35);box-shadow:0 6px 18px -10px rgba(10,40,18,.18)}
 
-/* Brand logo in the nav — gentle drop-shadow glow on hover so the click target
-   feels alive without changing layout. */
-.brand img{transition:filter .25s ease}
-.brand:hover img{filter:drop-shadow(0 0 10px rgba(244,192,32,.35))}
+/* Brand logo in the nav AND footer — gentle drop-shadow glow on hover so the
+   click target feels alive without changing layout. */
+.brand img,.foot-brand a img{transition:filter .25s ease}
+.brand:hover img,.foot-brand a:hover img{filter:drop-shadow(0 0 10px rgba(244,192,32,.35))}
 
 /* Footer link columns — slide the link a touch on hover */
 .foot-col a{transition:color .15s ease,transform .2s ease}

@@ -4,7 +4,9 @@
     <div class="wrap">
         <div class="foot-grid">
             <div class="foot-brand">
-                <img src="<?= htmlspecialchars(APP_URL, ENT_QUOTES, 'UTF-8') ?>/assets/img/GreenCash_Logo_Dark.png" alt="<?= htmlspecialchars(APP_NAME, ENT_QUOTES, 'UTF-8') ?>" style="height:60px;display:block">
+                <a href="<?= htmlspecialchars(APP_URL, ENT_QUOTES, 'UTF-8') ?>" aria-label="<?= htmlspecialchars(APP_NAME, ENT_QUOTES, 'UTF-8') ?> home">
+                    <img src="<?= htmlspecialchars(APP_URL, ENT_QUOTES, 'UTF-8') ?>/assets/img/GreenCash_Logo_Dark.png" alt="<?= htmlspecialchars(APP_NAME, ENT_QUOTES, 'UTF-8') ?>" style="height:60px;display:block">
+                </a>
                 <p>GreenCash gives salaried South Africans fast, fair access to the salary they've already earned. Apply online, any time.</p>
             </div>
             <div class="foot-col">
