@@ -30,3 +30,8 @@ Thumbs.db
 
 # Local scratch (temp scrapes, etc.)
 .firecrawl/
+
+# Crash / process dump files (Windows error reporter, debugger dumps)
+crash.txt
+*.dmp
+*.dump
