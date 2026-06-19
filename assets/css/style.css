@@ -285,6 +285,44 @@ footer{background:#121C14;color:#9fb0a3;padding:64px 0 30px} /* matches logo bac
   .band{padding:30px 24px}
 }
 
+/* ---------- MODAL ---------- */
+.modal-overlay{
+  position:fixed;inset:0;z-index:200;
+  background:rgba(12,20,16,.72);
+  backdrop-filter:blur(6px);
+  display:none;align-items:flex-start;justify-content:center;
+  padding:60px 18px 40px;overflow-y:auto;
+}
+.modal-overlay.open{display:flex}
+.modal-shell{
+  position:relative;background:var(--paper-2);
+  border-radius:18px;box-shadow:var(--shadow);
+  max-width:560px;width:100%;
+  animation:modalIn .25s ease-out;
+}
+@keyframes modalIn{
+  from{opacity:0;transform:translateY(20px)}
+  to{opacity:1;transform:none}
+}
+.modal-close{
+  position:absolute;top:14px;right:14px;
+  width:36px;height:36px;border-radius:50%;
+  border:none;background:var(--paper);color:var(--ink);
+  font-size:24px;line-height:1;cursor:pointer;
+  display:grid;place-items:center;
+  transition:background .15s, color .15s;
+}
+.modal-close:hover{background:var(--green);color:#fff}
+.modal-close:focus-visible{outline:3px solid var(--yellow);outline-offset:2px}
+.modal-body{padding:38px 32px 32px}
+.modal-body .desc{color:var(--muted);font-size:14px;margin-bottom:22px}
+@media(max-width:680px){
+  .modal-overlay{padding:30px 12px}
+  .modal-body{padding:30px 22px 22px}
+  .modal-body .fgrid{grid-template-columns:1fr}
+}
+body.modal-open{overflow:hidden}
+
 /* ---------- ELIGIBILITY LIST (hero card) ---------- */
 .eligibility{list-style:none;padding:0;margin:0 0 22px;display:grid;gap:14px}
 .eligibility li{display:flex;gap:12px;align-items:flex-start;font-size:15px;color:var(--ink);line-height:1.4}

@@ -314,3 +314,215 @@ function sendApplicationConfirmation(array $data): void {
         $data['loan_amount']
     ));
 }
+
+/**
+ * Email the full application details to the loans inbox (LOANS_EMAIL) so the team can
+ * triage applications by email until the admin portal is built.
+ *
+ * Uses PHP's mail() — works on Afrihost shared hosting via local sendmail without
+ * any vendor dependencies. Returns true on send, false on failure (also logged).
+ */
+function sendApplicationToLoans(array $data, array $docs = []): bool {
+    if (!defined('LOANS_EMAIL') || LOANS_EMAIL === '') {
+        error_log('sendApplicationToLoans skipped: LOANS_EMAIL not configured');
+        return false;
+    }
+
+    $h = fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
+    $fmtR = fn($v) => 'R ' . number_format((float) $v, 2, '.', ' ');
+
+    $statusLabels = [
+        'employed' => 'Permanent / full-time',
+        'contract' => 'Contract',
+        'self_employed' => 'Self-employed',
+    ];
+    $durationLabels = [
+        'less_3m' => 'Less than 3 months',
+        '3_6m'    => '3 – 6 months',
+        '6_12m'   => '6 – 12 months',
+        '1_2y'    => '1 – 2 years',
+        '2_5y'    => '2 – 5 years',
+        '5y_plus' => '5+ years',
+    ];
+    $empStatus  = $statusLabels[$data['employment_status'] ?? ''] ?? ($data['employment_status'] ?? '—');
+    $empTenure  = $durationLabels[$data['employment_duration'] ?? ''] ?? ($data['employment_duration'] ?? '—');
+
+    $totalExpenses = (float) ($data['rent'] ?? 0) + (float) ($data['food'] ?? 0)
+                   + (float) ($data['transport'] ?? 0) + (float) ($data['other_expenses'] ?? 0);
+    $disposable    = (float) ($data['salary_amount'] ?? 0) - $totalExpenses;
+
+    $docList = '';
+    if (!empty($docs)) {
+        $docList = '<ul style="margin:0;padding-left:20px">';
+        foreach ($docs as $d) {
+            $docList .= '<li>' . $h(ucwords(str_replace('_', ' ', $d['type'] ?? ''))) . ': <code>' . $h($d['name'] ?? '') . '</code></li>';
+        }
+        $docList .= '</ul>';
+    } else {
+        $docList = '<p style="color:#888;font-style:italic">No documents attached.</p>';
+    }
+
+    $appUrl    = defined('APP_URL') ? APP_URL : '';
+    $appName   = defined('APP_NAME') ? APP_NAME : 'GreenCash';
+    $reference = $h($data['reference_number'] ?? '—');
+    $subject   = sprintf(
+        '[%s] New loan application — %s %s — %s',
+        $reference,
+        $data['first_name'] ?? '',
+        $data['last_name'] ?? '',
+        $fmtR($data['loan_amount'] ?? 0)
+    );
+
+    $body = '<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body style="margin:0;padding:0;background:#f6f8f4;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#0c1410">
+<div style="max-width:680px;margin:0 auto;padding:24px">
+  <div style="background:#0c1410;color:#fff;padding:24px;border-radius:14px 14px 0 0">
+    <div style="color:#f4c020;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px">New loan application</div>
+    <h1 style="margin:0;font-size:22px;font-weight:700">' . $reference . '</h1>
+    <p style="margin:6px 0 0;color:#cfe0d3;font-size:14px">' . $h(date('l, j F Y \a\t H:i')) . '</p>
+  </div>
+
+  <div style="background:#fff;padding:24px;border-radius:0 0 14px 14px;border:1px solid #e2e8de;border-top:0">
+
+    <table style="width:100%;border-collapse:collapse;margin-bottom:18px">
+      <tr>
+        <td style="padding:8px 0;color:#5e6b62;font-size:13px;width:40%">Loan amount</td>
+        <td style="padding:8px 0;font-weight:700;font-size:17px;color:#1aa636">' . $fmtR($data['loan_amount'] ?? 0) . '</td>
+      </tr>
+      <tr>
+        <td style="padding:8px 0;color:#5e6b62;font-size:13px">Repayment due</td>
+        <td style="padding:8px 0">' . $h(date('j F Y', strtotime($data['repayment_date'] ?? $data['next_payday_date'] ?? 'now'))) . '</td>
+      </tr>
+    </table>
+
+    <h2 style="margin:18px 0 8px;font-size:15px;color:#0f7a26;padding-bottom:6px;border-bottom:2px solid #e2e8de">Applicant</h2>
+    <table style="width:100%;border-collapse:collapse;font-size:14px">
+      <tr><td style="padding:4px 0;color:#5e6b62;width:40%">Name</td><td><strong>' . $h(trim(($data['first_name'] ?? '') . ' ' . ($data['other_names'] ?? '') . ' ' . ($data['last_name'] ?? ''))) . '</strong></td></tr>
+      <tr><td style="padding:4px 0;color:#5e6b62">SA ID number</td><td>' . $h($data['id_number'] ?? '') . '</td></tr>
+      <tr><td style="padding:4px 0;color:#5e6b62">Email</td><td><a href="mailto:' . $h($data['email'] ?? '') . '" style="color:#0f7a26">' . $h($data['email'] ?? '') . '</a></td></tr>
+      <tr><td style="padding:4px 0;color:#5e6b62">Mobile</td><td><a href="tel:' . $h(preg_replace('/\s+/', '', $data['phone'] ?? '')) . '" style="color:#0f7a26">' . $h($data['phone'] ?? '') . '</a></td></tr>
+      <tr><td style="padding:4px 0;color:#5e6b62">Address</td><td>' . $h(trim(($data['address'] ?? '') . ', ' . ($data['city'] ?? '') . ', ' . ($data['province'] ?? '') . ' ' . ($data['zip_code'] ?? ''), ', ')) . '</td></tr>
+    </table>
+
+    <h2 style="margin:22px 0 8px;font-size:15px;color:#0f7a26;padding-bottom:6px;border-bottom:2px solid #e2e8de">Employment</h2>
+    <table style="width:100%;border-collapse:collapse;font-size:14px">
+      <tr><td style="padding:4px 0;color:#5e6b62;width:40%">Status</td><td>' . $h($empStatus) . '</td></tr>
+      <tr><td style="padding:4px 0;color:#5e6b62">Employer</td><td><strong>' . $h($data['employer_name'] ?? '') . '</strong></td></tr>
+      <tr><td style="padding:4px 0;color:#5e6b62">Job title</td><td>' . $h($data['job_title'] ?? '') . '</td></tr>
+      <tr><td style="padding:4px 0;color:#5e6b62">Tenure</td><td>' . $h($empTenure) . '</td></tr>
+      <tr><td style="padding:4px 0;color:#5e6b62">Employer contact</td><td>' . $h($data['employer_contact'] ?? '') . '</td></tr>
+    </table>
+
+    <h2 style="margin:22px 0 8px;font-size:15px;color:#0f7a26;padding-bottom:6px;border-bottom:2px solid #e2e8de">Affordability</h2>
+    <table style="width:100%;border-collapse:collapse;font-size:14px">
+      <tr><td style="padding:4px 0;color:#5e6b62;width:40%">Net monthly salary</td><td><strong>' . $fmtR($data['salary_amount'] ?? 0) . '</strong></td></tr>
+      <tr><td style="padding:4px 0;color:#5e6b62">Next payday</td><td>' . $h(date('j F Y', strtotime($data['next_payday_date'] ?? 'now'))) . '</td></tr>
+      <tr><td style="padding:4px 0;color:#5e6b62">Rent</td><td>' . $fmtR($data['rent'] ?? 0) . '</td></tr>
+      <tr><td style="padding:4px 0;color:#5e6b62">Food</td><td>' . $fmtR($data['food'] ?? 0) . '</td></tr>
+      <tr><td style="padding:4px 0;color:#5e6b62">Transport</td><td>' . $fmtR($data['transport'] ?? 0) . '</td></tr>
+      <tr><td style="padding:4px 0;color:#5e6b62">Other expenses</td><td>' . $fmtR($data['other_expenses'] ?? 0) . '</td></tr>
+      <tr><td style="padding:4px 0;color:#5e6b62;border-top:1px solid #e2e8de;padding-top:8px"><strong>Total expenses</strong></td><td style="padding-top:8px;border-top:1px solid #e2e8de"><strong>' . $fmtR($totalExpenses) . '</strong></td></tr>
+      <tr><td style="padding:4px 0;color:#5e6b62"><strong>Disposable income</strong></td><td><strong style="color:' . ($disposable >= (float) ($data['loan_amount'] ?? 0) * 1.15 ? '#1aa636' : '#d33') . '">' . $fmtR($disposable) . '</strong></td></tr>
+    </table>
+
+    <h2 style="margin:22px 0 8px;font-size:15px;color:#0f7a26;padding-bottom:6px;border-bottom:2px solid #e2e8de">Documents uploaded</h2>
+    ' . $docList . '
+
+    <div style="margin-top:24px;padding:14px 18px;background:#f6f8f4;border-radius:10px;font-size:13px;color:#5e6b62">
+      <strong style="color:#0c1410">Next steps:</strong> review the documents in the admin portal (when available) or request copies directly from the applicant. Stored in the database with application ID <code>' . $h($data['application_id'] ?? '?') . '</code>.
+    </div>
+
+  </div>
+
+  <p style="text-align:center;margin:18px 0 0;color:#999;font-size:11px">Sent automatically by ' . $h($appName) . ' &middot; ' . $h($appUrl) . '</p>
+</div>
+</body></html>';
+
+    $from = defined('MAIL_FROM_EMAIL') ? MAIL_FROM_EMAIL : 'noreply@greencash.co.za';
+    $fromName = defined('MAIL_FROM_NAME') ? MAIL_FROM_NAME : $appName;
+    $replyTo = $data['email'] ?? $from;
+
+    $headers = [];
+    $headers[] = 'MIME-Version: 1.0';
+    $headers[] = 'Content-Type: text/html; charset=UTF-8';
+    $headers[] = 'From: ' . $fromName . ' <' . $from . '>';
+    $headers[] = 'Reply-To: ' . $replyTo;
+    $headers[] = 'X-Mailer: GreenCash/1.0';
+    $headers[] = 'X-Priority: 3';
+
+    $sent = @mail(LOANS_EMAIL, $subject, $body, implode("\r\n", $headers));
+
+    if (!$sent) {
+        error_log(sprintf(
+            'sendApplicationToLoans FAILED ref=%s — mail() returned false. SMTP likely not configured (XAMPP local) or rejected by server.',
+            $data['reference_number'] ?? '?'
+        ));
+    }
+
+    return $sent;
+}
+
+/**
+ * Send a partnership enquiry email to PARTNERSHIP_EMAIL (info@greencash.co.za).
+ * Triggered by the "Become a partner" modal on index.php.
+ */
+function sendPartnershipEnquiry(array $data): bool {
+    if (!defined('PARTNERSHIP_EMAIL') || PARTNERSHIP_EMAIL === '') {
+        error_log('sendPartnershipEnquiry skipped: PARTNERSHIP_EMAIL not configured');
+        return false;
+    }
+
+    $h = fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
+    $appName = defined('APP_NAME') ? APP_NAME : 'GreenCash';
+    $appUrl  = defined('APP_URL') ? APP_URL : '';
+
+    $subject = '[Partnership enquiry] ' . trim($data['company'] ?? 'Unknown company');
+    $body = '<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body style="margin:0;padding:0;background:#f6f8f4;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#0c1410">
+<div style="max-width:600px;margin:0 auto;padding:24px">
+  <div style="background:linear-gradient(135deg,#0a5a1c,#0f7a26);color:#fff;padding:24px;border-radius:14px 14px 0 0">
+    <div style="color:#f4c020;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px">New partnership enquiry</div>
+    <h1 style="margin:0;font-size:20px;font-weight:700">' . $h($data['company'] ?? '') . '</h1>
+    <p style="margin:6px 0 0;color:#cfe0d3;font-size:14px">' . $h(date('l, j F Y \a\t H:i')) . '</p>
+  </div>
+
+  <div style="background:#fff;padding:24px;border-radius:0 0 14px 14px;border:1px solid #e2e8de;border-top:0">
+    <table style="width:100%;border-collapse:collapse;font-size:14px">
+      <tr><td style="padding:6px 0;color:#5e6b62;width:38%">Company</td><td><strong>' . $h($data['company'] ?? '') . '</strong></td></tr>
+      <tr><td style="padding:6px 0;color:#5e6b62">Contact person</td><td>' . $h($data['contact_name'] ?? '') . '</td></tr>
+      <tr><td style="padding:6px 0;color:#5e6b62">Email</td><td><a href="mailto:' . $h($data['email'] ?? '') . '" style="color:#0f7a26">' . $h($data['email'] ?? '') . '</a></td></tr>
+      <tr><td style="padding:6px 0;color:#5e6b62">Phone</td><td><a href="tel:' . $h(preg_replace('/\s+/', '', $data['phone'] ?? '')) . '" style="color:#0f7a26">' . $h($data['phone'] ?? '') . '</a></td></tr>
+      ' . (!empty($data['employees']) ? '<tr><td style="padding:6px 0;color:#5e6b62">Employees</td><td>' . $h($data['employees']) . '</td></tr>' : '') . '
+    </table>
+
+    ' . (!empty($data['message']) ? '
+    <h2 style="margin:22px 0 8px;font-size:15px;color:#0f7a26;padding-bottom:6px;border-bottom:2px solid #e2e8de">Message</h2>
+    <p style="margin:0;line-height:1.6;color:#1a241d;background:#f6f8f4;padding:14px 18px;border-radius:10px;border-left:3px solid #f4c020;font-style:italic">' . nl2br($h($data['message'])) . '</p>
+    ' : '') . '
+
+    <div style="margin-top:24px;padding:14px 18px;background:#f6f8f4;border-radius:10px;font-size:13px;color:#5e6b62">
+      Reply directly to this email to reach <strong>' . $h($data['contact_name'] ?? '') . '</strong>.
+    </div>
+  </div>
+
+  <p style="text-align:center;margin:18px 0 0;color:#999;font-size:11px">Sent automatically by ' . $h($appName) . ' &middot; ' . $h($appUrl) . '</p>
+</div>
+</body></html>';
+
+    $from = defined('MAIL_FROM_EMAIL') ? MAIL_FROM_EMAIL : 'noreply@greencash.co.za';
+    $fromName = defined('MAIL_FROM_NAME') ? MAIL_FROM_NAME : $appName;
+    $replyTo = $data['email'] ?? $from;
+
+    $headers = [];
+    $headers[] = 'MIME-Version: 1.0';
+    $headers[] = 'Content-Type: text/html; charset=UTF-8';
+    $headers[] = 'From: ' . $fromName . ' <' . $from . '>';
+    $headers[] = 'Reply-To: ' . $replyTo;
+    $headers[] = 'X-Mailer: GreenCash/1.0';
+
+    $sent = @mail(PARTNERSHIP_EMAIL, $subject, $body, implode("\r\n", $headers));
+
+    if (!$sent) {
+        error_log('sendPartnershipEnquiry FAILED for company=' . ($data['company'] ?? '?'));
+    }
+
+    return $sent;
+}

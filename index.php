@@ -102,7 +102,7 @@ include 'includes/header.php';
             <div class="ct">
                 <h2>Partner with GreenCash for your team</h2>
                 <p>Give your employees responsible access to a portion of their earned salary — a powerful, no-cost financial wellness benefit that reduces stress and boosts retention.</p>
-                <a href="mailto:<?= htmlspecialchars(PARTNERSHIP_EMAIL, ENT_QUOTES, 'UTF-8') ?>?subject=Partnership%20enquiry" class="btn btn-yellow">Become a partner →</a>
+                <button type="button" class="btn btn-yellow" data-open-partner-modal>Become a partner →</button>
             </div>
             <ul>
                 <li><span class="ck">✓</span><span>Zero cost to your business to set up.</span></li>
@@ -293,5 +293,55 @@ include 'includes/header.php';
         </div>
     </div>
 </section>
+
+<!-- ============ PARTNERSHIP ENQUIRY MODAL ============ -->
+<div class="modal-overlay" id="partnerModal" aria-hidden="true" role="dialog" aria-labelledby="partnerModalTitle">
+    <div class="modal-shell" role="document">
+        <button type="button" class="modal-close" data-close-modal aria-label="Close">&times;</button>
+        <div class="modal-body">
+            <div class="kicker" style="color:var(--green);font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px">For employers</div>
+            <h3 id="partnerModalTitle" style="font-size:22px;font-weight:700;margin-bottom:6px">Become a GreenCash partner</h3>
+            <p class="desc">Tell us about your business and we'll get back to you within one business day.</p>
+
+            <form method="post" action="<?= htmlspecialchars(APP_URL, ENT_QUOTES, 'UTF-8') ?>/partnership-enquiry.php" novalidate>
+                <?= csrfField() ?>
+                <div class="fgrid">
+                    <div class="field full">
+                        <label>Company name <span class="req">*</span></label>
+                        <input name="company" required maxlength="120">
+                    </div>
+                    <div class="field">
+                        <label>Your name <span class="req">*</span></label>
+                        <input name="contact_name" required maxlength="120">
+                    </div>
+                    <div class="field">
+                        <label>Number of employees</label>
+                        <select name="employees">
+                            <option value="">Select…</option>
+                            <option>1–20</option>
+                            <option>21–50</option>
+                            <option>51–200</option>
+                            <option>201–500</option>
+                            <option>500+</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>Work email <span class="req">*</span></label>
+                        <input type="email" name="email" required maxlength="255">
+                    </div>
+                    <div class="field">
+                        <label>Phone <span class="req">*</span></label>
+                        <input name="phone" inputmode="tel" required maxlength="20">
+                    </div>
+                    <div class="field full">
+                        <label>Anything we should know?</label>
+                        <textarea name="message" rows="3" maxlength="2000"></textarea>
+                    </div>
+                </div>
+                <button type="submit" name="partner_submit" class="btn btn-primary btn-block">Send enquiry →</button>
+            </form>
+        </div>
+    </div>
+</div>
 
 <?php include 'includes/footer.php'; ?>

@@ -178,6 +178,16 @@ if (!$alreadySubmitted && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST[
             'loan_amount'      => $data['loan_amount'],
         ]);
 
+        // Email the full application to the loans inbox (until admin portal exists)
+        sendApplicationToLoans(
+            array_merge($data, [
+                'reference_number' => $ref,
+                'application_id'   => $appId,
+                'repayment_date'   => $repaymentDate,
+            ]),
+            $uploadedDocs
+        );
+
         $_SESSION['app_reference'] = $ref;
         $_SESSION['app_name']      = $data['first_name'];
         redirect('/application-submitted.php');

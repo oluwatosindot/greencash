@@ -118,6 +118,33 @@ if (loanForm) {
   // NOTE: No submit handler — the form posts to apply.php for real backend handling.
 }
 
+// Partnership enquiry modal
+(function(){
+  const modal = document.getElementById('partnerModal');
+  if (!modal) return;
+
+  const openers = document.querySelectorAll('[data-open-partner-modal]');
+  const closers = modal.querySelectorAll('[data-close-modal]');
+
+  function openModal(){
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('modal-open');
+    const firstInput = modal.querySelector('input, select, textarea');
+    if (firstInput) firstInput.focus();
+  }
+  function closeModal(){
+    modal.classList.remove('open');
+    modal.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('modal-open');
+  }
+
+  openers.forEach(o => o.addEventListener('click', openModal));
+  closers.forEach(c => c.addEventListener('click', closeModal));
+  modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && modal.classList.contains('open')) closeModal(); });
+})();
+
 // FAQ accordion
 document.querySelectorAll('.q button').forEach(btn => {
   btn.addEventListener('click', () => {

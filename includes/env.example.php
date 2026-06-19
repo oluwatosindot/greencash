@@ -29,8 +29,9 @@ define('MAIL_FROM_NAME', 'GreenCash');
 define('MAIL_FROM_EMAIL', 'noreply@greencash.co.za');
 
 // === Notification + business email addresses ===
-define('ADMIN_EMAIL',       'admin@greencash.co.za');   // New-application notifications go here
-define('PARTNERSHIP_EMAIL', 'partners@greencash.co.za'); // Employers band CTA → mailto:
+define('ADMIN_EMAIL',       'admin@greencash.co.za');   // Reserved for future admin alerts
+define('LOANS_EMAIL',       'loans@greencash.co.za');   // Every new loan application is emailed here
+define('PARTNERSHIP_EMAIL', 'info@greencash.co.za');    // Employer partnership enquiries land here
 
 // === WhatsApp click-to-chat (floating button) ===
 // International format, NO leading + or spaces. South Africa: 27 + dropped leading 0.
