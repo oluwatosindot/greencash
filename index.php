@@ -2,6 +2,20 @@
 require_once 'includes/config.php';
 $page_title = 'Your Salary Boost';
 $page_description = "GreenCash gives salaried South Africans fast, fair access to a portion of their earned pay. R" . number_format(MIN_LOAN_AMOUNT, 0, '.', ',') . "–R" . number_format(MAX_LOAN_AMOUNT, 0, '.', ',') . " in minutes. Available 24 hours, 100% online.";
+
+// Sticky form values — set by apply.php on validation failure so users don't
+// lose 20 fields' worth of data on a single error. Consumed once then cleared.
+$applyOld    = $_SESSION['apply_form_data']   ?? [];
+$applyErrors = $_SESSION['apply_form_errors'] ?? [];
+unset($_SESSION['apply_form_data'], $_SESSION['apply_form_errors']);
+
+$applyVal = function (string $name) use ($applyOld): string {
+    return isset($applyOld[$name]) ? htmlspecialchars((string) $applyOld[$name], ENT_QUOTES, 'UTF-8') : '';
+};
+$applySel = function (string $name, string $option) use ($applyOld): string {
+    return (isset($applyOld[$name]) && (string) $applyOld[$name] === $option) ? 'selected' : '';
+};
+
 include 'includes/header.php';
 ?>
 
@@ -170,6 +184,21 @@ include 'includes/header.php';
             <p>Complete the secure application below. It takes about 5 minutes. All fields marked with <span style="color:var(--yellow)">*</span> are required.</p>
         </div>
 
+        <?php if (!empty($applyErrors)): ?>
+        <div class="flash flash--error" style="max-width:760px;margin:0 auto 18px" role="alert">
+            <span>
+                <strong>Please fix the following before submitting:</strong>
+                <ul style="margin:8px 0 0 18px;padding:0">
+                    <?php foreach ($applyErrors as $e): ?>
+                    <li><?= htmlspecialchars((string) $e, ENT_QUOTES, 'UTF-8') ?></li>
+                    <?php endforeach; ?>
+                </ul>
+                <em style="display:block;margin-top:8px;color:var(--muted)">Your documents must be re-uploaded — files can't be remembered across the redirect.</em>
+            </span>
+            <button class="x" type="button" aria-label="Dismiss">×</button>
+        </div>
+        <?php endif; ?>
+
         <div class="form-shell">
             <div class="steps-bar" id="stepsBar">
                 <div class="sb active" data-step="0"><div class="dot">1</div><span class="lbl">Personal</span></div>
@@ -186,30 +215,30 @@ include 'includes/header.php';
                     <h3>Personal details</h3>
                     <p class="desc">Tell us who you are. This must match your South African ID.</p>
                     <div class="fgrid">
-                        <div class="field"><label>First name <span class="req">*</span></label><input name="first_name" required><div class="err">Please enter your first name.</div></div>
-                        <div class="field"><label>Last name <span class="req">*</span></label><input name="last_name" required><div class="err">Please enter your last name.</div></div>
-                        <div class="field"><label>Other names</label><input name="other_names"></div>
-                        <div class="field"><label>SA ID number <span class="req">*</span></label><input name="id_number" inputmode="numeric" maxlength="13" required><div class="err">Enter a valid 13-digit ID number.</div></div>
-                        <div class="field"><label>Mobile number <span class="req">*</span></label><input name="phone" inputmode="tel" placeholder="072 123 4567" required><div class="err">Please enter a valid mobile number.</div></div>
-                        <div class="field"><label>Email address <span class="req">*</span></label><input type="email" name="email" placeholder="you@email.com" required><div class="err">Please enter a valid email.</div></div>
-                        <div class="field full"><label>Residential address <span class="req">*</span></label><input name="address" placeholder="Street, suburb" required><div class="err">Please enter your address.</div></div>
-                        <div class="field"><label>City / Town <span class="req">*</span></label><input name="city" required><div class="err">Required.</div></div>
+                        <div class="field"><label>First name <span class="req">*</span></label><input name="first_name" required value="<?= $applyVal('first_name') ?>"><div class="err">Please enter your first name.</div></div>
+                        <div class="field"><label>Last name <span class="req">*</span></label><input name="last_name" required value="<?= $applyVal('last_name') ?>"><div class="err">Please enter your last name.</div></div>
+                        <div class="field"><label>Other names</label><input name="other_names" value="<?= $applyVal('other_names') ?>"></div>
+                        <div class="field"><label>SA ID number <span class="req">*</span></label><input name="id_number" inputmode="numeric" maxlength="13" required value="<?= $applyVal('id_number') ?>"><div class="err">Enter a valid 13-digit ID number.</div></div>
+                        <div class="field"><label>Mobile number <span class="req">*</span></label><input name="phone" inputmode="tel" placeholder="072 123 4567" required value="<?= $applyVal('phone') ?>"><div class="err">Please enter a valid mobile number.</div></div>
+                        <div class="field"><label>Email address <span class="req">*</span></label><input type="email" name="email" placeholder="you@email.com" required value="<?= $applyVal('email') ?>"><div class="err">Please enter a valid email.</div></div>
+                        <div class="field full"><label>Residential address <span class="req">*</span></label><input name="address" placeholder="Street, suburb" required value="<?= $applyVal('address') ?>"><div class="err">Please enter your address.</div></div>
+                        <div class="field"><label>City / Town <span class="req">*</span></label><input name="city" required value="<?= $applyVal('city') ?>"><div class="err">Required.</div></div>
                         <div class="field"><label>Province <span class="req">*</span></label>
                             <select name="province" required>
                                 <option value="">Select…</option>
-                                <option value="Gauteng">Gauteng</option>
-                                <option value="Western Cape">Western Cape</option>
-                                <option value="KwaZulu-Natal">KwaZulu-Natal</option>
-                                <option value="Eastern Cape">Eastern Cape</option>
-                                <option value="Limpopo">Limpopo</option>
-                                <option value="Mpumalanga">Mpumalanga</option>
-                                <option value="North West">North West</option>
-                                <option value="Free State">Free State</option>
-                                <option value="Northern Cape">Northern Cape</option>
+                                <option value="Gauteng" <?= $applySel('province', 'Gauteng') ?>>Gauteng</option>
+                                <option value="Western Cape" <?= $applySel('province', 'Western Cape') ?>>Western Cape</option>
+                                <option value="KwaZulu-Natal" <?= $applySel('province', 'KwaZulu-Natal') ?>>KwaZulu-Natal</option>
+                                <option value="Eastern Cape" <?= $applySel('province', 'Eastern Cape') ?>>Eastern Cape</option>
+                                <option value="Limpopo" <?= $applySel('province', 'Limpopo') ?>>Limpopo</option>
+                                <option value="Mpumalanga" <?= $applySel('province', 'Mpumalanga') ?>>Mpumalanga</option>
+                                <option value="North West" <?= $applySel('province', 'North West') ?>>North West</option>
+                                <option value="Free State" <?= $applySel('province', 'Free State') ?>>Free State</option>
+                                <option value="Northern Cape" <?= $applySel('province', 'Northern Cape') ?>>Northern Cape</option>
                             </select>
                             <div class="err">Please select your province.</div>
                         </div>
-                        <div class="field"><label>Postal code</label><input name="zip_code" inputmode="numeric" maxlength="10"></div>
+                        <div class="field"><label>Postal code</label><input name="zip_code" inputmode="numeric" maxlength="10" value="<?= $applyVal('zip_code') ?>"></div>
                     </div>
                     <div class="form-nav">
                         <span></span>
@@ -225,27 +254,27 @@ include 'includes/header.php';
                         <div class="field"><label>Employment status <span class="req">*</span></label>
                             <select name="employment_status" required>
                                 <option value="">Select…</option>
-                                <option value="employed">Permanent / full-time</option>
-                                <option value="contract">Contract</option>
-                                <option value="self_employed">Self-employed</option>
+                                <option value="employed" <?= $applySel('employment_status', 'employed') ?>>Permanent / full-time</option>
+                                <option value="contract" <?= $applySel('employment_status', 'contract') ?>>Contract</option>
+                                <option value="self_employed" <?= $applySel('employment_status', 'self_employed') ?>>Self-employed</option>
                             </select>
                             <div class="err">Required.</div>
                         </div>
                         <div class="field"><label>Employment duration <span class="req">*</span></label>
                             <select name="employment_duration" required>
                                 <option value="">Select…</option>
-                                <option value="less_3m">Less than 3 months</option>
-                                <option value="3_6m">3 – 6 months</option>
-                                <option value="6_12m">6 – 12 months</option>
-                                <option value="1_2y">1 – 2 years</option>
-                                <option value="2_5y">2 – 5 years</option>
-                                <option value="5y_plus">5+ years</option>
+                                <option value="less_3m" <?= $applySel('employment_duration', 'less_3m') ?>>Less than 3 months</option>
+                                <option value="3_6m" <?= $applySel('employment_duration', '3_6m') ?>>3 – 6 months</option>
+                                <option value="6_12m" <?= $applySel('employment_duration', '6_12m') ?>>6 – 12 months</option>
+                                <option value="1_2y" <?= $applySel('employment_duration', '1_2y') ?>>1 – 2 years</option>
+                                <option value="2_5y" <?= $applySel('employment_duration', '2_5y') ?>>2 – 5 years</option>
+                                <option value="5y_plus" <?= $applySel('employment_duration', '5y_plus') ?>>5+ years</option>
                             </select>
                             <div class="err">Required.</div>
                         </div>
-                        <div class="field full"><label>Employer name <span class="req">*</span></label><input name="employer_name" required><div class="err">Required.</div></div>
-                        <div class="field"><label>Employer contact <span class="req">*</span></label><input name="employer_contact" inputmode="tel" required><div class="err">Required.</div></div>
-                        <div class="field"><label>Job title <span class="req">*</span></label><input name="job_title" required><div class="err">Required.</div></div>
+                        <div class="field full"><label>Employer name <span class="req">*</span></label><input name="employer_name" required value="<?= $applyVal('employer_name') ?>"><div class="err">Required.</div></div>
+                        <div class="field"><label>Employer contact <span class="req">*</span></label><input name="employer_contact" inputmode="tel" required value="<?= $applyVal('employer_contact') ?>"><div class="err">Required.</div></div>
+                        <div class="field"><label>Job title <span class="req">*</span></label><input name="job_title" required value="<?= $applyVal('job_title') ?>"><div class="err">Required.</div></div>
                     </div>
                     <div class="form-nav">
                         <button type="button" class="btn btn-ghost" data-prev>← Back</button>
@@ -258,16 +287,16 @@ include 'includes/header.php';
                     <h3>Financial</h3>
                     <p class="desc">Tell us about your income and the loan you need.</p>
                     <div class="fgrid">
-                        <div class="field"><label>Net monthly salary (R) <span class="req">*</span></label><input name="salary_amount" inputmode="numeric" required><div class="err">Required.</div></div>
-                        <div class="field"><label>Next pay date <span class="req">*</span></label><input type="date" name="next_payday_date" required><div class="err">Required.</div></div>
+                        <div class="field"><label>Net monthly salary (R) <span class="req">*</span></label><input name="salary_amount" inputmode="numeric" required value="<?= $applyVal('salary_amount') ?>"><div class="err">Required.</div></div>
+                        <div class="field"><label>Next pay date <span class="req">*</span></label><input type="date" name="next_payday_date" required value="<?= $applyVal('next_payday_date') ?>"><div class="err">Required.</div></div>
                         <div class="field full">
                             <label>Loan amount (R) <span class="req">*</span> <span class="val" id="loanAmtVal">R 5 000</span></label>
                             <input type="range" name="loan_amount" id="loanAmountSlider" min="<?= (int) MIN_LOAN_AMOUNT ?>" max="<?= (int) MAX_LOAN_AMOUNT ?>" step="500" value="5000">
                         </div>
-                        <div class="field"><label>Rent (R/mo)</label><input name="rent" inputmode="numeric" placeholder="0"></div>
-                        <div class="field"><label>Food (R/mo)</label><input name="food" inputmode="numeric" placeholder="0"></div>
-                        <div class="field"><label>Transport (R/mo)</label><input name="transport" inputmode="numeric" placeholder="0"></div>
-                        <div class="field"><label>Other expenses (R/mo)</label><input name="other_expenses" inputmode="numeric" placeholder="0"></div>
+                        <div class="field"><label>Rent (R/mo)</label><input name="rent" inputmode="numeric" placeholder="0" value="<?= $applyVal('rent') ?>"></div>
+                        <div class="field"><label>Food (R/mo)</label><input name="food" inputmode="numeric" placeholder="0" value="<?= $applyVal('food') ?>"></div>
+                        <div class="field"><label>Transport (R/mo)</label><input name="transport" inputmode="numeric" placeholder="0" value="<?= $applyVal('transport') ?>"></div>
+                        <div class="field"><label>Other expenses (R/mo)</label><input name="other_expenses" inputmode="numeric" placeholder="0" value="<?= $applyVal('other_expenses') ?>"></div>
                     </div>
                     <div class="form-nav">
                         <button type="button" class="btn btn-ghost" data-prev>← Back</button>

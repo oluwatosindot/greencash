@@ -20,7 +20,7 @@ include 'includes/header.php';
             <div class="form-body">
                 <div class="success">
                     <div class="badge">&#10003;</div>
-                    <h3>Application received!</h3>
+                    <h1>Application received!</h1>
                     <p>Thank you<?= !empty($app_name) ? ', ' . htmlspecialchars($app_name, ENT_QUOTES, 'UTF-8') : '' ?>. We've received your application and our team is reviewing it now. You'll get a decision and next steps by SMS and email shortly.</p>
                     <?php if (!empty($app_reference)): ?>
                     <div class="ref-no"><?= htmlspecialchars($app_reference, ENT_QUOTES, 'UTF-8') ?></div>

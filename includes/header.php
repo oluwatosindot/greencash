@@ -9,7 +9,7 @@
     $effectiveDesc  = isset($page_description) ? $page_description : "Fast, fair salary-advance loans for salaried South Africans. Apply online in minutes — 24 hours, 100% online.";
     $assetBase = htmlspecialchars(APP_URL, ENT_QUOTES, 'UTF-8');
     $canonical = $assetBase . ($_SERVER['SCRIPT_NAME'] ?? '/');
-    $ogImage   = $assetBase . '/assets/img/favicon-512.png';
+    $ogImage   = $assetBase . '/assets/img/og-card.png';
     ?>
     <title><?= sanitize($effectiveTitle) ?> — <?= htmlspecialchars(APP_NAME, ENT_QUOTES, 'UTF-8') ?></title>
     <meta name="description" content="<?= htmlspecialchars($effectiveDesc, ENT_QUOTES, 'UTF-8') ?>">
@@ -33,7 +33,7 @@
     <meta property="og:locale" content="en_ZA">
 
     <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary">
+    <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="<?= htmlspecialchars($effectiveTitle, ENT_QUOTES, 'UTF-8') ?> — <?= htmlspecialchars(APP_NAME, ENT_QUOTES, 'UTF-8') ?>">
     <meta name="twitter:description" content="<?= htmlspecialchars($effectiveDesc, ENT_QUOTES, 'UTF-8') ?>">
     <meta name="twitter:image" content="<?= $ogImage ?>">
@@ -54,7 +54,7 @@
 <body>
 
 <div class="preloader" id="gc-preloader" aria-hidden="true">
-    <img src="<?= htmlspecialchars(APP_URL, ENT_QUOTES, 'UTF-8') ?>/assets/img/GreenCash_Logo_Dark.png" alt="">
+    <img src="<?= htmlspecialchars(APP_URL, ENT_QUOTES, 'UTF-8') ?>/assets/img/GreenCash_Logo_Dark.png" alt="" width="1620" height="390">
 </div>
 <script>
 // Hide preloader when the page is fully loaded. Minimum visible time so super-fast pages
@@ -79,7 +79,7 @@
 <header>
     <div class="wrap nav">
         <a href="<?= htmlspecialchars(APP_URL, ENT_QUOTES, 'UTF-8') ?>" class="brand">
-            <img src="<?= htmlspecialchars(APP_URL, ENT_QUOTES, 'UTF-8') ?>/assets/img/GreenCash_Logo_Dark.png" alt="<?= htmlspecialchars(APP_NAME, ENT_QUOTES, 'UTF-8') ?>">
+            <img src="<?= htmlspecialchars(APP_URL, ENT_QUOTES, 'UTF-8') ?>/assets/img/GreenCash_Logo_Dark.png" alt="<?= htmlspecialchars(APP_NAME, ENT_QUOTES, 'UTF-8') ?>" width="1620" height="390">
         </a>
         <nav class="navlinks" id="navlinks">
             <a href="<?= htmlspecialchars(APP_URL, ENT_QUOTES, 'UTF-8') ?>/#how">How it works</a>

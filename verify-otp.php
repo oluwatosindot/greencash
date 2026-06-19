@@ -68,7 +68,7 @@ include 'includes/header.php';
 <section class="block" style="background:var(--paper);min-height:calc(100vh - 280px)">
     <div class="wrap" style="max-width:480px">
         <div class="sec-head">
-            <h2>Verify your code</h2>
+            <h1>Verify your code</h1>
             <p>We sent a 6-digit code to <b><?= htmlspecialchars($targetEmail !== '' ? $targetEmail : 'your account', ENT_QUOTES, 'UTF-8') ?></b>. Enter it below.</p>
         </div>
         <?php if (defined('APP_ENV') && APP_ENV === 'local'): ?>

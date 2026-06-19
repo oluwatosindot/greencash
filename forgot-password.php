@@ -55,7 +55,7 @@ include 'includes/header.php';
 <section class="block" style="background:var(--paper);min-height:calc(100vh - 280px)">
     <div class="wrap" style="max-width:480px">
         <div class="sec-head">
-            <h2>Forgot your password?</h2>
+            <h1>Forgot your password?</h1>
             <p>Enter the email on your account and we'll send a reset link.</p>
         </div>
         <?php if (!empty($errors['email'])): ?>

@@ -38,7 +38,7 @@ include 'includes/header.php';
 <section class="block" style="background:var(--paper);min-height:calc(100vh - 280px)">
     <div class="wrap" style="max-width:600px">
         <div class="sec-head">
-            <h2>Track your application</h2>
+            <h1>Track your application</h1>
             <p>Enter your reference number and SA ID number to check the latest status.</p>
         </div>
 

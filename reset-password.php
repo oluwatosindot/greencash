@@ -64,7 +64,7 @@ include 'includes/header.php';
     <div class="wrap" style="max-width:480px">
         <?php if (!$user || isset($errors['token'])): ?>
             <div class="sec-head">
-                <h2>Link invalid or expired</h2>
+                <h1>Link invalid or expired</h1>
                 <p>This password reset link is invalid or has expired. Reset links are valid for 1 hour.</p>
             </div>
             <div class="form-shell">
@@ -74,7 +74,7 @@ include 'includes/header.php';
             </div>
         <?php else: ?>
             <div class="sec-head">
-                <h2>Choose a new password</h2>
+                <h1>Choose a new password</h1>
                 <p>Make it 8+ characters with at least one number.</p>
             </div>
             <?php if (!empty($errors)): ?>

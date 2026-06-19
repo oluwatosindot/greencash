@@ -1,0 +1,85 @@
+date/time         : 2026-06-19, 20:39:53, 462ms
+computer name     : LAPTOP-QSDE7P2Q
+user name         : OluwatosinDot
+operating system  : Windows NT New Tablet PC x64 build 9200
+system language   : English
+system up time    : 1 day 17 hours
+program up time   : 2 seconds
+processors        : 8x Intel(R) Core(TM) i7-10510U CPU @ 1.80GHz
+physical memory   : 11244/32523 MB (free/total)
+free disk space   : (C:) 56.69 GB
+display mode      : 1536x864, 32 bit
+process id        : $93ac
+allocated memory  : 38.37 MB
+command line      : C:\xampp\sendmail\sendmail.exe -t
+executable        : sendmail.exe
+exec. date/time   : 2012-04-16 19:30
+compiled with     : Delphi 2006/07
+madExcept version : 3.0l
+callstack crc     : $ab1c3cf3, $d25f3731, $d25f3731
+exception number  : 1
+exception class   : EIdOSSLUnderlyingCryptoError
+exception message : Error connecting with SSL. Error connecting with SSL. error:1409442E:SSL routines:SSL3_READ_BYTES:tlsv1 alert protocol version.
+
+main thread ($5b3c):
+0045f17c +00a0 sendmail.exe IdSSLOpenSSLHeaders           16425   +8 EIdOpenSSLAPICryptoError.RaiseExceptionCode
+0045f0d2 +0012 sendmail.exe IdSSLOpenSSLHeaders           16409   +1 EIdOpenSSLAPICryptoError.RaiseException
+0045f30a +0122 sendmail.exe IdSSLOpenSSLHeaders           16468  +26 EIdOpenSSLAPISSLError.RaiseExceptionCode
+0045f1d9 +0021 sendmail.exe IdSSLOpenSSLHeaders           16433   +1 EIdOpenSSLAPISSLError.RaiseException
+00466686 +012a sendmail.exe IdSSLOpenSSL                   2668  +17 TIdSSLSocket.Connect
+00465a1c +00dc sendmail.exe IdSSLOpenSSL                   2262  +21 TIdSSLIOHandlerSocketOpenSSL.OpenEncodedConnection
+004655f6 +0062 sendmail.exe IdSSLOpenSSL                   2106   +9 TIdSSLIOHandlerSocketOpenSSL.StartSSL
+00465587 +006b sendmail.exe IdSSLOpenSSL                   2093  +15 TIdSSLIOHandlerSocketOpenSSL.ConnectClient
+00444a9f +0063 sendmail.exe IdIOHandlerSocket               335  +13 TIdIOHandlerSocket.Open
+00465637 +0007 sendmail.exe IdSSLOpenSSL                   2122   +1 TIdSSLIOHandlerSocketOpenSSL.Open
+0044157d +0235 sendmail.exe IdTCPClient                     318  +53 TIdTCPClientCustom.Connect
+00445cc8 +00a4 sendmail.exe IdExplicitTLSClientServerBase   257  +23 TIdExplicitTLSClient.Connect
+0045ab7b +0017 sendmail.exe IdSMTP                          373   +2 TIdSMTP.Connect
+004b5f14 +1060 sendmail.exe sendmail                        808 +326 initialization
+74f75d47 +0017 KERNEL32.DLL                                          BaseThreadInitThunk
+
+thread $8f98:
+74f75d47 +17 KERNEL32.DLL  BaseThreadInitThunk
+
+thread $590c:
+74f75d47 +17 KERNEL32.DLL  BaseThreadInitThunk
+
+thread $5a68:
+74f75d47 +17 KERNEL32.DLL  BaseThreadInitThunk
+
+stack dump:
+001afa4c  81 f1 45 00 de fa ed 0e - 01 00 00 00 07 00 00 00  ..E.............
+001afa5c  60 fa 1a 00 81 f1 45 00 - 28 ca 5f 02 2e 44 09 14  `.....E.(._..D..
+001afa6c  64 e7 45 00 e8 da 5e 02 - e4 fb 1a 00 7c fa 1a 00  d.E...^.....|...
+001afa7c  f8 fb 1a 00 c8 4b 40 00 - e4 fb 1a 00 a0 1d 61 02  .....K@.......a.
+001afa8c  e8 da 5e 02 64 e7 45 00 - 06 00 00 00 e5 00 00 00  ..^.d.E.........
+001afa9c  65 00 00 00 00 00 01 01 - 65 00 00 00 c0 ab 60 02  e.......e.....`.
+001afaac  08 c6 d5 03 60 b8 f3 03 - f1 00 00 00 f1 00 00 00  ....`...........
+001afabc  00 00 0c 11 00 01 00 00 - ff 07 00 00 3c 5b 00 01  ............<[..
+001afacc  71 00 00 00 f1 00 00 00 - f1 00 00 00 48 5d 10 01  q...........H]..
+001afadc  c8 54 d5 03 f1 00 00 00 - 11 00 00 00 6e 01 00 00  .T..........n...
+001afaec  b8 e7 d5 03 74 fb 1a 00 - a0 24 ff 76 73 25 84 26  ....t....$.vs%.&
+001afafc  fe ff ff ff 50 fb 1a 00 - d2 2e 00 77 00 00 00 00  ....P......w....
+001afb0c  de 2e 00 77 60 b8 f3 03 - 00 00 d5 03 2e 44 09 14  ...w`........D..
+001afb1c  88 01 00 00 00 00 00 00 - 00 00 00 00 40 9f 04 11  ............@...
+001afb2c  3c fb 1a 00 38 ea d5 03 - 00 00 00 65 72 72 6f 72  <...8......error
+001afb3c  3a 31 34 30 39 34 34 32 - 45 3a 53 53 4c 20 72 6f  :1409442E:SSL.ro
+001afb4c  75 74 69 6e 65 73 3a 53 - 53 4c 33 5f 52 45 41 44  utines:SSL3_READ
+001afb5c  5f 42 59 54 45 53 3a 74 - 6c 73 76 31 20 61 6c 65  _BYTES:tlsv1.ale
+001afb6c  72 74 20 70 72 6f 74 6f - 63 6f 6c 20 76 65 72 73  rt.protocol.vers
+001afb7c  69 6f 6e 00 fe ff ff ff - c4 fb 1a 00 83 e0 09 11  ion.............
+
+disassembling:
+[...]
+0045f171         mov     eax, esi
+0045f173         call    dword ptr [eax]
+0045f175         mov     edx, eax
+0045f177 16424   mov     [edx+$c], ebx
+0045f17a 16425   mov     eax, edx
+0045f17c       > call    -$5a495 ($404cec)      ; System.@RaiseExcept
+0045f181 16426   xor     eax, eax
+0045f183         pop     edx
+0045f184         pop     ecx
+0045f185         pop     ecx
+0045f186         mov     fs:[eax], edx
+[...]

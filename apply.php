@@ -202,6 +202,18 @@ if (!$alreadySubmitted && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST[
         $_SESSION['app_name']      = $data['first_name'];
         redirect('/application-submitted.php');
     }
+
+    // Validation failed — preserve form values so the user doesn't lose 20 fields'
+    // worth of data. Files can't survive a redirect, so they need to be re-uploaded
+    // (we tell the user so explicitly). Strip file fields from the carry-over.
+    $sticky = $_POST;
+    unset($sticky['csrf_token'], $sticky['submit_application']);
+    $_SESSION['apply_form_data']   = $sticky;
+    $_SESSION['apply_form_errors'] = $errors;
+    setFlash('error', count($errors) === 1
+        ? $errors[0]
+        : 'Please fix the ' . count($errors) . ' issues below and re-upload your documents.');
+    redirect('/#apply');
 }
 
 $page_title = $alreadySubmitted ? 'Application received' : 'Apply';
@@ -215,7 +227,7 @@ include 'includes/header.php';
             <div class="form-body">
                 <div class="success">
                     <div class="badge" style="background:linear-gradient(135deg,var(--yellow),#e0a800);color:var(--ink)">⏳</div>
-                    <h3>We already received your application</h3>
+                    <h1>We already received your application</h1>
                     <p>Hi <?= htmlspecialchars($applicantName, ENT_QUOTES, 'UTF-8') ?> — we got an application from you in the last 5 minutes. Our team is on it. You'll hear from us by SMS and email shortly.</p>
                     <p style="margin-top:18px"><a href="<?= htmlspecialchars(APP_URL, ENT_QUOTES, 'UTF-8') ?>" class="btn btn-primary">Back to home →</a></p>
                 </div>
@@ -228,7 +240,7 @@ include 'includes/header.php';
     <div class="wrap" style="max-width:640px">
         <div class="form-shell">
             <div class="form-body">
-                <h3>We couldn't submit your application</h3>
+                <h1>We couldn't submit your application</h1>
                 <p class="desc">Please fix the issues below and try again from the form on the home page.</p>
                 <ul style="margin:18px 0;padding-left:20px;color:#d33">
                     <?php foreach ($errors as $err): ?>

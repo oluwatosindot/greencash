@@ -68,7 +68,7 @@ include 'includes/header.php';
 <section class="block" style="background:var(--paper);min-height:calc(100vh - 280px)">
     <div class="wrap">
         <div class="sec-head">
-            <h2>Contact us</h2>
+            <h1>Contact us</h1>
             <p>Questions? We're open 24 hours.</p>
         </div>
 

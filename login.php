@@ -28,24 +28,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $accountLocked = $user && checkRateLimit($pdo, $email, 'admin_login', 10, 30);
 
         if (!$accountLocked && $user && password_verify($password, $user['password'])) {
-            // 4a. Success — reset rate limits
+            // 4a. OTP issuance cooldown — even with valid credentials, cap how often
+            // we'll issue+send a fresh OTP. Prevents an attacker who has the password
+            // from spamming the SMS/email delivery channel.
+            $otpIssueKey = 'otp_issue_user_' . $user['id'];
+            if (checkRateLimit($pdo, $otpIssueKey, 'otp_issue', 5, 15)) {
+                setFlash('error', 'Too many sign-in attempts. Please wait 15 minutes before requesting a new code.');
+                redirect('/login.php');
+            }
+            incrementRateLimit($pdo, $otpIssueKey, 'otp_issue', 5, 15);
+
+            // 4b. Success — reset failed-attempt limits
             resetRateLimit($pdo, $email, 'admin_login');
             resetRateLimit($pdo, $ip, 'ip_login');
 
-            // 4b. Invalidate any existing unused OTPs
+            // 4c. Invalidate any existing unused OTPs
             $pdo->prepare("UPDATE otp_verifications SET used = 1 WHERE user_id = ?")
                 ->execute([$user['id']]);
 
-            // 4c. Generate and store new OTP (10-minute expiry)
+            // 4d. Generate and store new OTP (10-minute expiry)
             $otp    = generateOTP();
             $expiry = date('Y-m-d H:i:s', strtotime('+10 minutes'));
             $pdo->prepare("INSERT INTO otp_verifications (user_id, otp_code, expires_at) VALUES (?, ?, ?)")
                 ->execute([$user['id'], $otp, $expiry]);
 
-            // 4d. Stub: write OTP to error log (replaced by PHPMailer in Step 7)
+            // 4e. Stub: write OTP to error log (replaced by PHPMailer in Step 7)
             error_log("GREENCASH DEV OTP for {$user['email']}: $otp");
 
-            // 4e. Store user ID in session (not fully logged in yet — waiting for OTP)
+            // 4f. Store user ID in session (not fully logged in yet — waiting for OTP)
             $_SESSION['otp_user_id'] = $user['id'];
             redirect('/verify-otp.php');
         } else {
@@ -68,7 +78,7 @@ include 'includes/header.php';
 <section class="block" style="background:var(--paper);min-height:calc(100vh - 280px)">
     <div class="wrap" style="max-width:480px">
         <div class="sec-head">
-            <h2>Sign in to your account</h2>
+            <h1>Sign in to your account</h1>
             <p>Welcome back.</p>
         </div>
         <?php if ($error): ?>
