@@ -4,12 +4,21 @@ Options -Indexes
 # Follow symlinks
 Options +FollowSymLinks
 
-# PHP error display (production: off)
+# PHP error display — off in production, errors logged to error_log
 php_flag display_errors off
 php_flag log_errors on
 
-# HTTPS redirect (PRODUCTION: uncomment before deploy)
-# RewriteEngine On
+# Enable rewrite engine — used for directory blocking and (after SSL) HTTPS redirect
+RewriteEngine On
+
+# Block direct HTTP access to sensitive directories.
+# PHP can still read these files server-side (require_once, fopen, etc).
+RewriteRule ^(includes|config|cron|database|vendor|uploads)/ - [F,L]
+# Uploaded documents (payslips, IDs, bank statements) are gated through
+# serve-document.php which checks the requester is an authenticated admin.
+
+# HTTPS redirect — UNCOMMENT AFTER SSL cert is active on Afrihost (cPanel → SSL/TLS Status).
+# Leaving this commented during initial deploy avoids cert warnings on the first visit.
 # RewriteCond %{HTTPS} off
 # RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
@@ -17,13 +26,8 @@ php_flag log_errors on
 ErrorDocument 404 /404.php
 ErrorDocument 500 /500.php
 
-# Block access to sensitive files
+# Block access to sensitive file extensions if accidentally placed in docroot
 <FilesMatch "\.(sql|log|md|json|lock|yml|env|gitignore)$">
-    Require all denied
-</FilesMatch>
-
-# Block access to directories
-<FilesMatch "^(includes|config|uploads|vendor|cron|database)">
     Require all denied
 </FilesMatch>
 
@@ -34,8 +38,10 @@ ErrorDocument 500 /500.php
     Header always set X-XSS-Protection "1; mode=block"
     Header always set Referrer-Policy "strict-origin-when-cross-origin"
     Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
-    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
-    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net; img-src 'self' data: https:; connect-src 'self';"
+    # HSTS — only after SSL is confirmed working, otherwise browsers cache the HTTPS pin
+    # and you can't fall back to HTTP during troubleshooting.
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net; img-src 'self' data: https:; connect-src 'self';"
 </IfModule>
 
-# Protect uploads directory — no PHP execution (see uploads/.htaccess)
+# Note: uploads/.htaccess separately disables PHP execution in that directory.
