@@ -365,11 +365,14 @@ function sendApplicationToLoans(array $data, array $docs = []): bool {
     $appUrl    = defined('APP_URL') ? APP_URL : '';
     $appName   = defined('APP_NAME') ? APP_NAME : 'GreenCash';
     $reference = $h($data['reference_number'] ?? '—');
+    // Scrub CR/LF from any user-controlled value that lands in a header or the
+    // subject — prevents email header injection (Bcc/Cc/etc.).
+    $scrub = fn($v) => preg_replace('/[\r\n]+/', ' ', (string) $v);
     $subject   = sprintf(
         '[%s] New loan application — %s %s — %s',
-        $reference,
-        $data['first_name'] ?? '',
-        $data['last_name'] ?? '',
+        $scrub($data['reference_number'] ?? '—'),
+        $scrub($data['first_name'] ?? ''),
+        $scrub($data['last_name'] ?? ''),
         $fmtR($data['loan_amount'] ?? 0)
     );
 
@@ -438,8 +441,10 @@ function sendApplicationToLoans(array $data, array $docs = []): bool {
 </body></html>';
 
     $from = defined('MAIL_FROM_EMAIL') ? MAIL_FROM_EMAIL : 'noreply@greencash.co.za';
-    $fromName = defined('MAIL_FROM_NAME') ? MAIL_FROM_NAME : $appName;
-    $replyTo = $data['email'] ?? $from;
+    $fromName = $scrub(defined('MAIL_FROM_NAME') ? MAIL_FROM_NAME : $appName);
+    // Reply-To: only accept if it passes filter_var AND has no CR/LF (defence in depth)
+    $replyToRaw = $scrub($data['email'] ?? $from);
+    $replyTo = filter_var($replyToRaw, FILTER_VALIDATE_EMAIL) ? $replyToRaw : $from;
 
     $headers = [];
     $headers[] = 'MIME-Version: 1.0';
@@ -472,10 +477,13 @@ function sendPartnershipEnquiry(array $data): bool {
     }
 
     $h = fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
+    // Scrub CR/LF from any user-controlled value placed in a header or the
+    // subject — prevents email header injection.
+    $scrub = fn($v) => preg_replace('/[\r\n]+/', ' ', (string) $v);
     $appName = defined('APP_NAME') ? APP_NAME : 'GreenCash';
     $appUrl  = defined('APP_URL') ? APP_URL : '';
 
-    $subject = '[Partnership enquiry] ' . trim($data['company'] ?? 'Unknown company');
+    $subject = '[Partnership enquiry] ' . trim($scrub($data['company'] ?? 'Unknown company'));
     $body = '<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body style="margin:0;padding:0;background:#f6f8f4;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#0c1410">
 <div style="max-width:600px;margin:0 auto;padding:24px">
   <div style="background:linear-gradient(135deg,#0a5a1c,#0f7a26);color:#fff;padding:24px;border-radius:14px 14px 0 0">
@@ -508,8 +516,9 @@ function sendPartnershipEnquiry(array $data): bool {
 </body></html>';
 
     $from = defined('MAIL_FROM_EMAIL') ? MAIL_FROM_EMAIL : 'noreply@greencash.co.za';
-    $fromName = defined('MAIL_FROM_NAME') ? MAIL_FROM_NAME : $appName;
-    $replyTo = $data['email'] ?? $from;
+    $fromName = $scrub(defined('MAIL_FROM_NAME') ? MAIL_FROM_NAME : $appName);
+    $replyToRaw = $scrub($data['email'] ?? $from);
+    $replyTo = filter_var($replyToRaw, FILTER_VALIDATE_EMAIL) ? $replyToRaw : $from;
 
     $headers = [];
     $headers[] = 'MIME-Version: 1.0';
