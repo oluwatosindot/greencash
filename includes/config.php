@@ -483,7 +483,12 @@ function sendPartnershipEnquiry(array $data): bool {
     $appName = defined('APP_NAME') ? APP_NAME : 'GreenCash';
     $appUrl  = defined('APP_URL') ? APP_URL : '';
 
-    $subject = '[Partnership enquiry] ' . trim($scrub($data['company'] ?? 'Unknown company'));
+    // Use the company name if provided, otherwise fall back to the contact person's name so
+    // the subject line is still meaningful (and you can scan the inbox).
+    $subjectName = trim($scrub($data['company'] ?? '')) !== ''
+        ? trim($scrub($data['company']))
+        : trim($scrub($data['contact_name'] ?? 'New enquiry'));
+    $subject = '[Partnership enquiry] ' . $subjectName;
     $body = '<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body style="margin:0;padding:0;background:#f6f8f4;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#0c1410">
 <div style="max-width:600px;margin:0 auto;padding:24px">
   <div style="background:linear-gradient(135deg,#0a5a1c,#0f7a26);color:#fff;padding:24px;border-radius:14px 14px 0 0">

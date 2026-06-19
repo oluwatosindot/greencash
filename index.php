@@ -307,8 +307,8 @@ include 'includes/header.php';
                 <?= csrfField() ?>
                 <div class="fgrid">
                     <div class="field full">
-                        <label>Company name <span class="req">*</span></label>
-                        <input name="company" required maxlength="120">
+                        <label>Company name</label>
+                        <input name="company" maxlength="120">
                     </div>
                     <div class="field">
                         <label>Your name <span class="req">*</span></label>
@@ -318,6 +318,7 @@ include 'includes/header.php';
                         <label>Number of employees</label>
                         <select name="employees">
                             <option value="">Select…</option>
+                            <option>None</option>
                             <option>1–20</option>
                             <option>21–50</option>
                             <option>51–200</option>
@@ -326,7 +327,7 @@ include 'includes/header.php';
                         </select>
                     </div>
                     <div class="field">
-                        <label>Work email <span class="req">*</span></label>
+                        <label>Email <span class="req">*</span></label>
                         <input type="email" name="email" required maxlength="255">
                     </div>
                     <div class="field">

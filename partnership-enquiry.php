@@ -19,9 +19,8 @@ $data = [
 ];
 
 $errors = [];
-if ($data['company'] === '')                                    $errors[] = 'Company name is required.';
 if ($data['contact_name'] === '')                               $errors[] = 'Your name is required.';
-if (!filter_var($data['email'], FILTER_VALIDATE_EMAIL))         $errors[] = 'A valid work email is required.';
+if (!filter_var($data['email'], FILTER_VALIDATE_EMAIL))         $errors[] = 'A valid email is required.';
 if ($data['phone'] === '')                                      $errors[] = 'Phone number is required.';
 if (mb_strlen($data['message']) > 2000)                         $errors[] = 'Message is too long (max 2000 characters).';
 
