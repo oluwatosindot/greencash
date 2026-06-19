@@ -29,7 +29,7 @@
     var p = document.getElementById('gc-preloader');
     if (!p) return;
     var t0 = Date.now();
-    var minMs = 800;
+    var minMs = 1500;
     function hide(){
         var wait = Math.max(0, minMs - (Date.now() - t0));
         setTimeout(function(){
