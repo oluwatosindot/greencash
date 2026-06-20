@@ -17,10 +17,15 @@ RewriteRule ^(includes|config|cron|database|vendor|uploads)/ - [F,L]
 # Uploaded documents (payslips, IDs, bank statements) are gated through
 # serve-document.php which checks the requester is an authenticated admin.
 
-# HTTPS redirect — UNCOMMENT AFTER SSL cert is active on Afrihost (cPanel → SSL/TLS Status).
-# Leaving this commented during initial deploy avoids cert warnings on the first visit.
-# RewriteCond %{HTTPS} off
-# RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+# Canonicalize to https://www.greencash.co.za in a single 301 hop.
+# Fires when the request is HTTP, or the host is not exactly www.greencash.co.za.
+# This prevents the unstyled-page bug on the bare domain (CSP 'self' treats
+# greencash.co.za and www.greencash.co.za as different origins, so assets built
+# from APP_URL=https://www.greencash.co.za get blocked when the page is served
+# from the bare host).
+RewriteCond %{HTTPS} off [OR]
+RewriteCond %{HTTP_HOST} !^www\.greencash\.co\.za$ [NC]
+RewriteRule ^(.*)$ https://www.greencash.co.za/$1 [L,R=301]
 
 # Clean URLs — serve /login as /login.php (and the same for any other root-level *.php).
 # Internal rewrite only (no redirect), so form actions pointing at .php URLs still work
