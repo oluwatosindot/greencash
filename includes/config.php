@@ -359,6 +359,73 @@ function sendApplicationConfirmation(array $data): void {
 }
 
 /**
+ * Email a 6-digit OTP code to a user as part of the login flow.
+ * Returns true on send, false on failure. Always also writes the OTP to error_log
+ * so a developer can recover it during testing if mail is broken.
+ */
+function sendOtpEmail(string $recipient, string $otp, int $minutesValid = 10): bool {
+    // Always log first — even if the mail send fails or is misconfigured, the OTP is
+    // recoverable from /home/USER/logs/php.error.log for the development team.
+    error_log("GREENCASH OTP for {$recipient}: {$otp}");
+
+    if (!filter_var($recipient, FILTER_VALIDATE_EMAIL)) {
+        error_log('sendOtpEmail aborted: invalid recipient ' . $recipient);
+        return false;
+    }
+
+    $h = fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
+    $scrub = fn($v) => preg_replace('/[\r\n]+/', ' ', (string) $v);
+    $appName = defined('APP_NAME') ? APP_NAME : 'GreenCash';
+    $appUrl  = defined('APP_URL') ? APP_URL : '';
+    $codeHtml = $h($otp);
+
+    $subject = $scrub("Your {$appName} sign-in code: {$otp}");
+
+    $body = '<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body style="margin:0;padding:0;background:#f6f8f4;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#0c1410">
+<div style="max-width:520px;margin:0 auto;padding:24px">
+  <div style="background:#121C14;color:#fff;padding:28px 24px;border-radius:14px 14px 0 0;text-align:center">
+    <div style="color:#f4c020;font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px">' . $h($appName) . ' &middot; Sign-in code</div>
+    <h1 style="margin:0;font-size:18px;font-weight:600;color:#cfe0d3">Use this code to finish signing in</h1>
+  </div>
+
+  <div style="background:#fff;padding:32px 24px;border-radius:0 0 14px 14px;border:1px solid #e2e8de;border-top:0;text-align:center">
+    <div style="display:inline-block;background:#f6f8f4;border:2px dashed #1aa636;border-radius:14px;padding:18px 28px;margin:6px 0 14px">
+      <span style="font-family:Consolas,Menlo,monospace;font-size:38px;font-weight:700;color:#0f7a26;letter-spacing:.18em">' . $codeHtml . '</span>
+    </div>
+    <p style="margin:14px 0 0;color:#5e6b62;font-size:14px;line-height:1.5">
+      This code expires in <strong>' . (int) $minutesValid . ' minutes</strong>.<br>
+      It can only be used once.
+    </p>
+    <div style="margin-top:26px;padding:14px 18px;background:#fffbe6;border-left:3px solid #f4c020;border-radius:0 10px 10px 0;text-align:left;font-size:13px;color:#1a241d">
+      <strong>If you did not request this code:</strong> someone may have your password. Sign in and change it immediately, then email <a href="mailto:info@greencash.co.za" style="color:#0f7a26">info@greencash.co.za</a>.
+    </div>
+  </div>
+
+  <p style="text-align:center;margin:18px 0 0;color:#999;font-size:11px">Sent automatically by ' . $h($appName) . ' &middot; ' . $h($appUrl) . '</p>
+</div>
+</body></html>';
+
+    $from = defined('MAIL_FROM_EMAIL') ? MAIL_FROM_EMAIL : 'noreply@greencash.co.za';
+    $fromName = $scrub(defined('MAIL_FROM_NAME') ? MAIL_FROM_NAME : $appName);
+
+    $headers = [];
+    $headers[] = 'MIME-Version: 1.0';
+    $headers[] = 'Content-Type: text/html; charset=UTF-8';
+    $headers[] = 'From: ' . $fromName . ' <' . $from . '>';
+    $headers[] = 'Reply-To: ' . $from;
+    $headers[] = 'X-Mailer: GreenCash/1.0';
+    $headers[] = 'X-Priority: 1'; // Mark as high so it doesn't sit in inbox
+    $headers[] = 'X-Auto-Response-Suppress: All';
+
+    $sent = @mail($recipient, $subject, $body, implode("\r\n", $headers));
+
+    if (!$sent) {
+        error_log("sendOtpEmail FAILED for {$recipient} — mail() returned false. OTP still in this log above.");
+    }
+    return $sent;
+}
+
+/**
  * Email the full application details to the loans inbox (LOANS_EMAIL) so the team can
  * triage applications by email until the admin portal is built.
  *

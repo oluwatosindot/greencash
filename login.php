@@ -52,8 +52,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $pdo->prepare("INSERT INTO otp_verifications (user_id, otp_code, expires_at) VALUES (?, ?, ?)")
                 ->execute([$user['id'], $otp, $expiry]);
 
-            // 4e. Stub: write OTP to error log (replaced by PHPMailer in Step 7)
-            error_log("GREENCASH DEV OTP for {$user['email']}: $otp");
+            // 4e. Email the OTP to the user. sendOtpEmail() also writes the code to
+            // error_log so devs can still recover it during testing if SMTP is down.
+            sendOtpEmail($user['email'], $otp, 10);
 
             // 4f. Store user ID in session (not fully logged in yet — waiting for OTP)
             $_SESSION['otp_user_id'] = $user['id'];
