@@ -22,6 +22,15 @@ RewriteRule ^(includes|config|cron|database|vendor|uploads)/ - [F,L]
 # RewriteCond %{HTTPS} off
 # RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
+# Clean URLs — serve /login as /login.php (and the same for any other root-level *.php).
+# Internal rewrite only (no redirect), so form actions pointing at .php URLs still work
+# and POST data is never lost to a 30x redirect. Both /login and /login.php load the
+# same page; just the cleaner URL is now valid too.
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME}.php -f
+RewriteRule ^(.+?)/?$ $1.php [L,QSA]
+
 # Custom error pages
 ErrorDocument 404 /404.php
 ErrorDocument 500 /500.php
