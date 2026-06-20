@@ -1,12 +1,14 @@
 -- Green Cash Database Schema
 -- Run this file once on a fresh MySQL server to create all tables.
 -- Database: greencash (utf8mb4_unicode_ci)
-
-CREATE DATABASE IF NOT EXISTS `greencash`
-    DEFAULT CHARACTER SET utf8mb4
-    COLLATE utf8mb4_unicode_ci;
-
-USE `greencash`;
+--
+-- For local dev (XAMPP), create the DB first:
+--   CREATE DATABASE greencash DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+--   USE greencash;
+--
+-- For Afrihost / shared hosting:
+--   Create the DB via cPanel → MySQL Databases (you don't have CREATE DATABASE rights),
+--   then import this file into the new DB via phpMyAdmin → Import.
 
 SET FOREIGN_KEY_CHECKS=0;
 
