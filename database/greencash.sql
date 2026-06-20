@@ -34,6 +34,38 @@ CREATE TABLE IF NOT EXISTS `users` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================================
+-- CREDIT BROKERS  (defined here so salary_advance_applications can FK to it)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `credit_brokers` (
+    `id` INT(11) NOT NULL AUTO_INCREMENT,
+    `broker_code` VARCHAR(50) NOT NULL,
+    `first_name` VARCHAR(100) NOT NULL,
+    `last_name` VARCHAR(100) NOT NULL,
+    `email` VARCHAR(255) NOT NULL,
+    `phone` VARCHAR(20) NOT NULL,
+    `id_number` VARCHAR(20) NOT NULL,
+    `company_name` VARCHAR(255) DEFAULT NULL,
+    `company_registration` VARCHAR(100) DEFAULT NULL,
+    `province` VARCHAR(100) DEFAULT NULL,
+    `city` VARCHAR(100) DEFAULT NULL,
+    `experience_years` INT(11) DEFAULT NULL,
+    `why_join` TEXT DEFAULT NULL,
+    `id_document_path` VARCHAR(500) DEFAULT NULL,
+    `username` VARCHAR(50) UNIQUE NULL,
+    `password_hash` VARCHAR(255) DEFAULT NULL COMMENT 'Set when admin activates account (hash of ID number)',
+    `status` ENUM('pending','approved','active','inactive','suspended') DEFAULT 'pending',
+    `commission_rate` DECIMAL(5,2) DEFAULT 5.00,
+    `total_referrals` INT(11) DEFAULT 0,
+    `total_commission` DECIMAL(15,2) DEFAULT 0.00,
+    `last_login` TIMESTAMP NULL DEFAULT NULL,
+    `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `broker_code` (`broker_code`),
+    UNIQUE KEY `email` (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================
 -- SALARY ADVANCE APPLICATIONS (all loan applications)
 -- ============================================================
 CREATE TABLE IF NOT EXISTS `salary_advance_applications` (
@@ -106,38 +138,6 @@ CREATE TABLE IF NOT EXISTS `application_documents` (
     PRIMARY KEY (`id`),
     KEY `application_id` (`application_id`),
     CONSTRAINT `ad_application_fk` FOREIGN KEY (`application_id`) REFERENCES `salary_advance_applications` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- ============================================================
--- CREDIT BROKERS
--- ============================================================
-CREATE TABLE IF NOT EXISTS `credit_brokers` (
-    `id` INT(11) NOT NULL AUTO_INCREMENT,
-    `broker_code` VARCHAR(50) NOT NULL,
-    `first_name` VARCHAR(100) NOT NULL,
-    `last_name` VARCHAR(100) NOT NULL,
-    `email` VARCHAR(255) NOT NULL,
-    `phone` VARCHAR(20) NOT NULL,
-    `id_number` VARCHAR(20) NOT NULL,
-    `company_name` VARCHAR(255) DEFAULT NULL,
-    `company_registration` VARCHAR(100) DEFAULT NULL,
-    `province` VARCHAR(100) DEFAULT NULL,
-    `city` VARCHAR(100) DEFAULT NULL,
-    `experience_years` INT(11) DEFAULT NULL,
-    `why_join` TEXT DEFAULT NULL,
-    `id_document_path` VARCHAR(500) DEFAULT NULL,
-    `username` VARCHAR(50) UNIQUE NULL,
-    `password_hash` VARCHAR(255) DEFAULT NULL COMMENT 'Set when admin activates account (hash of ID number)',
-    `status` ENUM('pending','approved','active','inactive','suspended') DEFAULT 'pending',
-    `commission_rate` DECIMAL(5,2) DEFAULT 5.00,
-    `total_referrals` INT(11) DEFAULT 0,
-    `total_commission` DECIMAL(15,2) DEFAULT 0.00,
-    `last_login` TIMESTAMP NULL DEFAULT NULL,
-    `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
-    `updated_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `broker_code` (`broker_code`),
-    UNIQUE KEY `email` (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================================
