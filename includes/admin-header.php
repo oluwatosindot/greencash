@@ -20,54 +20,67 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --gc-primary: #2E7D32;
-            --gc-primary-light: #66BB6A;
-            --gc-primary-dark: #1B5E20;
-            --gc-sidebar-bg: #1B5E20;
+            --gc-dark:        #121C14;
+            --gc-dark-soft:   #1a241d;
+            --gc-green:       #1aa636;
+            --gc-green-deep:  #0f7a26;
+            --gc-yellow:      #f4c020;
+            --gc-paper:       #f6f8f4;
+            --gc-line:        #e2e8de;
+            --gc-muted:       #5e6b62;
             --gc-sidebar-width: 240px;
         }
-        body { font-family: 'Inter', sans-serif; background: #f4f6f8; }
-        /* Sidebar */
+        body { font-family: 'Inter', sans-serif; background: var(--gc-paper); color: #0c1410; }
+        /* Sidebar — dark, matching the public nav */
         #sidebar {
             width: var(--gc-sidebar-width);
             min-height: 100vh;
-            background: var(--gc-sidebar-bg);
+            background: var(--gc-dark);
             position: fixed;
             top: 0; left: 0;
             z-index: 1000;
             overflow-y: auto;
+            border-right: 1px solid rgba(255,255,255,0.07);
         }
         #sidebar .sidebar-brand {
             padding: 1.25rem 1rem;
             color: #fff;
             font-weight: 700;
             font-size: 1.15rem;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 1px solid rgba(255,255,255,0.07);
             display: block;
             text-decoration: none;
         }
+        #sidebar .sidebar-brand .accent { color: var(--gc-yellow); }
         #sidebar .nav-link {
-            color: rgba(255,255,255,0.75);
-            padding: 0.6rem 1rem;
+            color: rgba(255,255,255,0.72);
+            padding: 0.65rem 1rem;
             font-size: 0.9rem;
             font-weight: 500;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.6rem;
             border-radius: 0;
-            transition: background 0.15s;
+            border-left: 3px solid transparent;
+            transition: background 0.15s, color 0.15s, border-color 0.15s;
         }
-        #sidebar .nav-link:hover,
-        #sidebar .nav-link.active {
-            background: rgba(255,255,255,0.12);
+        #sidebar .nav-link:hover {
+            background: rgba(244,192,32,0.08);
             color: #fff;
         }
+        #sidebar .nav-link.active {
+            background: rgba(244,192,32,0.14);
+            color: var(--gc-yellow);
+            border-left-color: var(--gc-yellow);
+        }
+        #sidebar .nav-link i { width: 18px; text-align: center; }
         #sidebar .nav-section {
-            padding: 0.75rem 1rem 0.25rem;
-            font-size: 0.7rem;
+            padding: 0.85rem 1rem 0.3rem;
+            font-size: 0.68rem;
             text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: rgba(255,255,255,0.4);
+            letter-spacing: 0.1em;
+            color: rgba(255,255,255,0.35);
+            font-weight: 600;
         }
         /* Main content */
         #main-content {
@@ -76,11 +89,11 @@
             display: flex;
             flex-direction: column;
         }
-        /* Top bar */
+        /* Top bar — dark to unify with the sidebar */
         #topbar {
-            background: #fff;
-            border-bottom: 1px solid #dee2e6;
-            padding: 0.75rem 1.5rem;
+            background: var(--gc-dark);
+            border-bottom: 1px solid rgba(255,255,255,0.07);
+            padding: 0.85rem 1.5rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -88,8 +101,38 @@
             top: 0;
             z-index: 999;
         }
-        #topbar .page-heading { font-weight: 600; font-size: 1.05rem; margin: 0; }
-        .content-area { padding: 1.5rem; flex: 1; }
+        #topbar .page-heading { font-weight: 600; font-size: 1.1rem; margin: 0; color: #fff; }
+        #topbar .who { color: rgba(255,255,255,0.7); font-size: 0.85rem; }
+        #topbar .btn-outline-danger {
+            color: #ffb3b3;
+            border-color: rgba(255,255,255,0.18);
+            background: transparent;
+        }
+        #topbar .btn-outline-danger:hover {
+            background: rgba(255,255,255,0.06);
+            color: #fff;
+            border-color: rgba(255,255,255,0.35);
+        }
+        .content-area { padding: 1.75rem 1.5rem; flex: 1; }
+        /* Bootstrap-overrides that align with the brand */
+        .btn-primary, .btn-success {
+            background: var(--gc-green-deep);
+            border-color: var(--gc-green-deep);
+        }
+        .btn-primary:hover, .btn-success:hover {
+            background: var(--gc-green);
+            border-color: var(--gc-green);
+        }
+        a { color: var(--gc-green-deep); }
+        a:hover { color: var(--gc-green); }
+        .card { border: 1px solid var(--gc-line); }
+        .card-header { background: #fff; border-bottom-color: var(--gc-line); font-weight: 600; }
+        .table-hover tbody tr:hover { background: rgba(244,192,32,0.06); }
+        .badge.bg-pending     { background: #f4c020 !important; color: #0c1410; }
+        .badge.bg-approved    { background: var(--gc-green) !important; color: #fff; }
+        .badge.bg-rejected    { background: #d33 !important; color: #fff; }
+        .badge.bg-under_review{ background: #6c757d !important; color: #fff; }
+        .badge.bg-disbursed   { background: var(--gc-green-deep) !important; color: #fff; }
     </style>
 </head>
 <body>
