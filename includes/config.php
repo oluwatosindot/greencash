@@ -1,4 +1,11 @@
 <?php
+// Force timezone to Africa/Johannesburg so PHP-side date/time calculations
+// (OTP expiry, password reset links, log timestamps) match MySQL's NOW() and
+// CURRENT_TIMESTAMP. Without this, Afrihost's PHP runs in UTC while MySQL
+// runs in SAST, so PHP-calculated expires_at lands 2 hours in the past and
+// every OTP is "expired" the moment it's created.
+date_default_timezone_set('Africa/Johannesburg');
+
 // Start session with hardened cookie params. Must happen before any output and
 // before session_start() — calling these AFTER session_start() is a no-op.
 if (session_status() === PHP_SESSION_NONE) {
