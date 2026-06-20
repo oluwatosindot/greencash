@@ -512,17 +512,40 @@ function sendApplicationToLoans(array $data, array $docs = []): bool {
     $mailBody .= $body . $eol . $eol;
 
     // Parts 2..N — each uploaded document as base64 attachment. Resolve each $doc['path']
-    // (stored as 'uploads/filename.ext') to an absolute path under UPLOAD_DIR; reject
-    // anything that path-traverses outside the uploads directory.
+    // (stored as 'uploads/filename.ext') to an absolute path inside UPLOAD_DIR; reject
+    // anything that path-traverses or sits outside the uploads directory.
     $uploadDirReal = realpath(UPLOAD_DIR);
+    // Defence-in-depth: a trailing separator on the prefix prevents the
+    // "/home/x/uploads" prefix matching "/home/x/uploads-evil/..." paths.
+    $uploadPrefix  = rtrim($uploadDirReal, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+    $allowedExts   = ['pdf', 'jpg', 'jpeg', 'png'];
     $totalAttachedBytes = 0;
     $attachmentNotes = [];
 
     foreach ($docs as $d) {
         $relPath = $d['path'] ?? '';
         if ($relPath === '') continue;
+
+        // Reject path traversal + absolute paths BEFORE concatenating with ABSPATH.
+        if (strpos($relPath, '..') !== false
+            || str_starts_with($relPath, '/')
+            || str_starts_with($relPath, '\\')
+            || preg_match('#^[a-zA-Z]:[/\\\\]#', $relPath)) {
+            $attachmentNotes[] = 'Suspicious path rejected: ' . $relPath;
+            continue;
+        }
+
+        // Extension allowlist — same set the uploader enforces.
+        $ext = strtolower(pathinfo($relPath, PATHINFO_EXTENSION));
+        if (!in_array($ext, $allowedExts, true)) {
+            $attachmentNotes[] = 'Non-allowlisted extension: ' . $relPath;
+            continue;
+        }
+
         $absPath = realpath(ABSPATH . $relPath);
-        if (!$absPath || !is_readable($absPath) || strpos($absPath, $uploadDirReal) !== 0) {
+        if (!$absPath
+            || !is_readable($absPath)
+            || strncmp($absPath, $uploadPrefix, strlen($uploadPrefix)) !== 0) {
             $attachmentNotes[] = 'Could not attach: ' . ($d['name'] ?? $relPath);
             continue;
         }
