@@ -489,21 +489,91 @@ function sendApplicationToLoans(array $data, array $docs = []): bool {
     $replyToRaw = $scrub($data['email'] ?? $from);
     $replyTo = filter_var($replyToRaw, FILTER_VALIDATE_EMAIL) ? $replyToRaw : $from;
 
+    // Build multipart MIME so we can attach the applicant's docs (ID, payslip, bank
+    // statements). Each file capped at 8 MB; total email capped at 20 MB to stay under
+    // most mail-server limits.
+    $boundary = 'gc_' . bin2hex(random_bytes(16));
+    $maxFileBytes  = 8 * 1024 * 1024;
+    $maxTotalBytes = 20 * 1024 * 1024;
+
     $headers = [];
     $headers[] = 'MIME-Version: 1.0';
-    $headers[] = 'Content-Type: text/html; charset=UTF-8';
+    $headers[] = 'Content-Type: multipart/mixed; boundary="' . $boundary . '"';
     $headers[] = 'From: ' . $fromName . ' <' . $from . '>';
     $headers[] = 'Reply-To: ' . $replyTo;
     $headers[] = 'X-Mailer: GreenCash/1.0';
     $headers[] = 'X-Priority: 3';
 
-    $sent = @mail(LOANS_EMAIL, $subject, $body, implode("\r\n", $headers));
+    // Part 1 — the HTML body
+    $eol = "\r\n";
+    $mailBody  = '--' . $boundary . $eol;
+    $mailBody .= 'Content-Type: text/html; charset=UTF-8' . $eol;
+    $mailBody .= 'Content-Transfer-Encoding: 8bit' . $eol . $eol;
+    $mailBody .= $body . $eol . $eol;
+
+    // Parts 2..N — each uploaded document as base64 attachment. Resolve each $doc['path']
+    // (stored as 'uploads/filename.ext') to an absolute path under UPLOAD_DIR; reject
+    // anything that path-traverses outside the uploads directory.
+    $uploadDirReal = realpath(UPLOAD_DIR);
+    $totalAttachedBytes = 0;
+    $attachmentNotes = [];
+
+    foreach ($docs as $d) {
+        $relPath = $d['path'] ?? '';
+        if ($relPath === '') continue;
+        $absPath = realpath(ABSPATH . $relPath);
+        if (!$absPath || !is_readable($absPath) || strpos($absPath, $uploadDirReal) !== 0) {
+            $attachmentNotes[] = 'Could not attach: ' . ($d['name'] ?? $relPath);
+            continue;
+        }
+        $size = filesize($absPath);
+        if ($size === false || $size > $maxFileBytes) {
+            $attachmentNotes[] = 'Skipped (too large): ' . ($d['name'] ?? basename($absPath));
+            continue;
+        }
+        if ($totalAttachedBytes + $size > $maxTotalBytes) {
+            $attachmentNotes[] = 'Skipped (email size cap reached): ' . ($d['name'] ?? basename($absPath));
+            continue;
+        }
+        $fileBytes = file_get_contents($absPath);
+        if ($fileBytes === false) continue;
+        $totalAttachedBytes += $size;
+
+        // MIME type — finfo if available, else a sensible fallback by extension
+        $mimeType = 'application/octet-stream';
+        if (function_exists('finfo_open')) {
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            $detected = finfo_file($finfo, $absPath);
+            finfo_close($finfo);
+            if ($detected) $mimeType = $detected;
+        } else {
+            $ext = strtolower(pathinfo($absPath, PATHINFO_EXTENSION));
+            $mimeType = ['pdf' => 'application/pdf', 'jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg', 'png' => 'image/png'][$ext] ?? $mimeType;
+        }
+
+        // Use the original filename (sanitized — strip CR/LF/quotes) so the recipient sees
+        // "ID_BobSmith.pdf" rather than the safeName "id_document_679...pdf".
+        $displayName = preg_replace('/[\r\n"\\\\]/', '_', $d['name'] ?? basename($absPath));
+
+        $mailBody .= '--' . $boundary . $eol;
+        $mailBody .= 'Content-Type: ' . $mimeType . '; name="' . $displayName . '"' . $eol;
+        $mailBody .= 'Content-Transfer-Encoding: base64' . $eol;
+        $mailBody .= 'Content-Disposition: attachment; filename="' . $displayName . '"' . $eol . $eol;
+        $mailBody .= chunk_split(base64_encode($fileBytes)) . $eol;
+    }
+
+    $mailBody .= '--' . $boundary . '--' . $eol;
+
+    $sent = @mail(LOANS_EMAIL, $subject, $mailBody, implode($eol, $headers));
 
     if (!$sent) {
         error_log(sprintf(
             'sendApplicationToLoans FAILED ref=%s — mail() returned false. SMTP likely not configured (XAMPP local) or rejected by server.',
             $data['reference_number'] ?? '?'
         ));
+    }
+    if (!empty($attachmentNotes)) {
+        error_log('sendApplicationToLoans attachment notes for ref=' . ($data['reference_number'] ?? '?') . ': ' . implode('; ', $attachmentNotes));
     }
 
     return $sent;
