@@ -364,9 +364,13 @@ function sendApplicationConfirmation(array $data): void {
  * so a developer can recover it during testing if mail is broken.
  */
 function sendOtpEmail(string $recipient, string $otp, int $minutesValid = 10): bool {
-    // Always log first — even if the mail send fails or is misconfigured, the OTP is
-    // recoverable from /home/USER/logs/php.error.log for the development team.
-    error_log("GREENCASH OTP for {$recipient}: {$otp}");
+    // SECURITY: never log OTPs in production. Anyone with read access to the PHP error
+    // log (other shared-hosting tenants, sysadmins, log-aggregators) could harvest 2FA
+    // codes in real time, defeating the whole second-factor. Gate behind APP_ENV='local'
+    // so the convenience exists ONLY when developers are running locally on XAMPP.
+    if (defined('APP_ENV') && APP_ENV === 'local') {
+        error_log("GREENCASH DEV OTP for {$recipient}: {$otp}");
+    }
 
     if (!filter_var($recipient, FILTER_VALIDATE_EMAIL)) {
         error_log('sendOtpEmail aborted: invalid recipient ' . $recipient);
@@ -379,7 +383,11 @@ function sendOtpEmail(string $recipient, string $otp, int $minutesValid = 10): b
     $appUrl  = defined('APP_URL') ? APP_URL : '';
     $codeHtml = $h($otp);
 
-    $subject = $scrub("Your {$appName} sign-in code: {$otp}");
+    // SECURITY: keep the OTP OUT of the Subject line. Subject is visible in inbox
+    // previews, lock-screen notifications, mail-server logs, and bounce reports —
+    // any of which can leak the code to people other than the intended recipient.
+    // The code lives in the HTML body only.
+    $subject = $scrub("Your {$appName} sign-in code");
 
     $body = '<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body style="margin:0;padding:0;background:#f6f8f4;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#0c1410">
 <div style="max-width:520px;margin:0 auto;padding:24px">
@@ -420,7 +428,8 @@ function sendOtpEmail(string $recipient, string $otp, int $minutesValid = 10): b
     $sent = @mail($recipient, $subject, $body, implode("\r\n", $headers));
 
     if (!$sent) {
-        error_log("sendOtpEmail FAILED for {$recipient} — mail() returned false. OTP still in this log above.");
+        // Log the delivery failure but NEVER the OTP value itself — see APP_ENV check above.
+        error_log("sendOtpEmail FAILED for {$recipient} — mail() returned false. Check SMTP config.");
     }
     return $sent;
 }
