@@ -425,6 +425,10 @@ function sendOtpEmail(string $recipient, string $otp, int $minutesValid = 10): b
     $headers[] = 'X-Priority: 1'; // Mark as high so it doesn't sit in inbox
     $headers[] = 'X-Auto-Response-Suppress: All';
 
+    // RFC 2047-encode the subject so any non-ASCII (em dash, accents, emoji) survives
+    // SMTP transfer without becoming mojibake like "â€"".
+    $subject = mb_encode_mimeheader($subject, 'UTF-8', 'B');
+
     $sent = @mail($recipient, $subject, $body, implode("\r\n", $headers));
 
     if (!$sent) {
@@ -663,6 +667,9 @@ function sendApplicationToLoans(array $data, array $docs = []): bool {
 
     $mailBody .= '--' . $boundary . '--' . $eol;
 
+    // RFC 2047-encode the subject so the em-dash separator survives SMTP transfer.
+    $subject = mb_encode_mimeheader($subject, 'UTF-8', 'B');
+
     $sent = @mail(LOANS_EMAIL, $subject, $mailBody, implode($eol, $headers));
 
     if (!$sent) {
@@ -743,6 +750,9 @@ function sendPartnershipEnquiry(array $data): bool {
     $headers[] = 'From: ' . $fromName . ' <' . $from . '>';
     $headers[] = 'Reply-To: ' . $replyTo;
     $headers[] = 'X-Mailer: GreenCash/1.0';
+
+    // RFC 2047-encode the subject so non-ASCII characters survive SMTP transfer.
+    $subject = mb_encode_mimeheader($subject, 'UTF-8', 'B');
 
     $sent = @mail(PARTNERSHIP_EMAIL, $subject, $body, implode("\r\n", $headers));
 
