@@ -2,4 +2,4 @@
 deployment:
   tasks:
     - export DEPLOYPATH=$HOME/public_html/
-    - /usr/bin/rsync -av --exclude='.git/' --exclude='.firecrawl/' --exclude='node_modules/' --exclude='.claude/' --exclude='docs/' --exclude='snippets/' --exclude='*.md' --exclude='.cpanel.yml' --exclude='.gitignore' --exclude='*.zip' --exclude='.DS_Store' --exclude='Thumbs.db' . $DEPLOYPATH
+    - tar --exclude='./.git' --exclude='./.firecrawl' --exclude='./node_modules' --exclude='./.claude' --exclude='./docs' --exclude='./snippets' --exclude='*.md' --exclude='./.cpanel.yml' --exclude='./.gitignore' --exclude='*.zip' --exclude='.DS_Store' --exclude='Thumbs.db' -cf - . | tar -xf - -C $DEPLOYPATH
